@@ -1,7 +1,19 @@
 -- premake5.lua
 workspace "jchat"
-	configurations { "Debug", "Release" }
-	platforms { "Linux32", "Linux64", "OSX32", "OSX64", "Win32", "Win64" }
+	configurations {
+		"Linux32_Debug",
+		"Linux64_Debug",
+		"OSX32_Debug",
+		"OSX64_Debug",
+		"Win32_Debug",
+		"Win64_Debug",
+		"Linux32_Release",
+		"Linux64_Release",
+		"OSX32_Release",
+		"OSX64_Release",
+		"Win32_Release",
+		"Win64_Release"
+	}
 
 	project "jchat_server"
 		kind "ConsoleApp"
@@ -11,27 +23,27 @@ workspace "jchat"
 		includedirs { "jchat_lib/", "jchat_common/", "jchat_server/include/", "jchat_server/src/" }
 		files { "jchat_lib/**", "jchat_common/**", "jchat_server/include/**", "jchat_server/src/**.cpp" }
 
-		filter { "platforms:Linux32", "platforms:OSX32", "platforms:Win32" }
+		configuration { "Linux32_*", "OSX32_*", "Win32_*" }
 			architecture "x32"
 
-		filter { "platforms:Linux64", "platforms:OSX64", "platforms:Win64" }
+		configuration { "Linux64_*", "OSX64_*", "Win64_*" }
 			architecture "x64"
 
-		filter { "platforms:Linux32", "platforms:Linux64" }
+		configuration { "Linux32_*", "Linux64_*" }
 			system "linux"
 
-		filter { "platforms:OSX32", "platforms:OSX64" }
+		configuration { "OSX32_*", "OSX64_*" }
 			system "macosx"
 
-		filter { "platforms:Win32", "platforms:Win64" }
+		configuration { "Win32_*", "Win64_*" }
 			system "windows"
 			links { "ws2_32" }
 
-		configuration "Debug"
+		configuration "*_Debug"
 			defines { "DEBUG" }
 			flags { "Symbols" }
 
-		configuration "Release"
+		configuration "*_Release"
 			defines { "NDEBUG" }
 			optimize "On"
 
@@ -47,30 +59,26 @@ workspace "jchat"
 		includedirs { "jchat_lib/", "jchat_common/", "jchat_client/include/", "jchat_client/src/" }
 		files { "jchat_lib/**", "jchat_common/**", "jchat_client/include/**", "jchat_client/src/**.cpp" }
 
-		filter { "platforms:Linux32", "platforms:OSX32", "platforms:Win32" }
+		configuration { "Linux32_*", "OSX32_*", "Win32_*" }
 			architecture "x32"
 
-		filter { "platforms:Linux64", "platforms:OSX64", "platforms:Win64" }
+		configuration { "Linux64_*", "OSX64_*", "Win64_*" }
 			architecture "x64"
 
-		filter { "platforms:Linux32", "platforms:Linux64" }
+		configuration { "Linux32_*", "Linux64_*" }
 			system "linux"
 
-		filter { "platforms:OSX32", "platforms:OSX64" }
+		configuration { "OSX32_*", "OSX64_*" }
 			system "macosx"
 
-		filter { "platforms:Win32", "platforms:Win64" }
+		configuration { "Win32_*", "Win64_*" }
 			system "windows"
 			links { "ws2_32" }
 
-		configuration "Debug"
+		configuration "*_Debug"
 			defines { "DEBUG" }
 			flags { "Symbols" }
 
-		configuration "Release"
+		configuration "*_Release"
 			defines { "NDEBUG" }
 			optimize "On"
-
-		configuration { "gmake" }
-			buildoptions { "-std=c++11" }
-			linkoptions { "-pthread" }

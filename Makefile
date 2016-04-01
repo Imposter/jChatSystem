@@ -3,85 +3,67 @@
 .NOTPARALLEL:
 
 ifndef config
-  config=debug_linux32
+  config=linux32_debug
 endif
 
 ifndef verbose
   SILENT = @
 endif
 
-ifeq ($(config),debug_linux32)
-  jchat_config = debug_linux32
-  jchat_server_config = debug_linux32
-  jchat_client_config = debug_linux32
+ifeq ($(config),linux32_debug)
+  jchat_server_config = linux32_debug
+  jchat_client_config = linux32_debug
 endif
-ifeq ($(config),debug_linux64)
-  jchat_config = debug_linux64
-  jchat_server_config = debug_linux64
-  jchat_client_config = debug_linux64
+ifeq ($(config),linux64_debug)
+  jchat_server_config = linux64_debug
+  jchat_client_config = linux64_debug
 endif
-ifeq ($(config),debug_osx32)
-  jchat_config = debug_osx32
-  jchat_server_config = debug_osx32
-  jchat_client_config = debug_osx32
+ifeq ($(config),osx32_debug)
+  jchat_server_config = osx32_debug
+  jchat_client_config = osx32_debug
 endif
-ifeq ($(config),debug_osx64)
-  jchat_config = debug_osx64
-  jchat_server_config = debug_osx64
-  jchat_client_config = debug_osx64
+ifeq ($(config),osx64_debug)
+  jchat_server_config = osx64_debug
+  jchat_client_config = osx64_debug
 endif
-ifeq ($(config),debug_win32)
-  jchat_config = debug_win32
-  jchat_server_config = debug_win32
-  jchat_client_config = debug_win32
+ifeq ($(config),win32_debug)
+  jchat_server_config = win32_debug
+  jchat_client_config = win32_debug
 endif
-ifeq ($(config),debug_win64)
-  jchat_config = debug_win64
-  jchat_server_config = debug_win64
-  jchat_client_config = debug_win64
+ifeq ($(config),win64_debug)
+  jchat_server_config = win64_debug
+  jchat_client_config = win64_debug
 endif
-ifeq ($(config),release_linux32)
-  jchat_config = release_linux32
-  jchat_server_config = release_linux32
-  jchat_client_config = release_linux32
+ifeq ($(config),linux32_release)
+  jchat_server_config = linux32_release
+  jchat_client_config = linux32_release
 endif
-ifeq ($(config),release_linux64)
-  jchat_config = release_linux64
-  jchat_server_config = release_linux64
-  jchat_client_config = release_linux64
+ifeq ($(config),linux64_release)
+  jchat_server_config = linux64_release
+  jchat_client_config = linux64_release
 endif
-ifeq ($(config),release_osx32)
-  jchat_config = release_osx32
-  jchat_server_config = release_osx32
-  jchat_client_config = release_osx32
+ifeq ($(config),osx32_release)
+  jchat_server_config = osx32_release
+  jchat_client_config = osx32_release
 endif
-ifeq ($(config),release_osx64)
-  jchat_config = release_osx64
-  jchat_server_config = release_osx64
-  jchat_client_config = release_osx64
+ifeq ($(config),osx64_release)
+  jchat_server_config = osx64_release
+  jchat_client_config = osx64_release
 endif
-ifeq ($(config),release_win32)
-  jchat_config = release_win32
-  jchat_server_config = release_win32
-  jchat_client_config = release_win32
+ifeq ($(config),win32_release)
+  jchat_server_config = win32_release
+  jchat_client_config = win32_release
 endif
-ifeq ($(config),release_win64)
-  jchat_config = release_win64
-  jchat_server_config = release_win64
-  jchat_client_config = release_win64
+ifeq ($(config),win64_release)
+  jchat_server_config = win64_release
+  jchat_client_config = win64_release
 endif
 
-PROJECTS := jchat jchat_server jchat_client
+PROJECTS := jchat_server jchat_client
 
 .PHONY: all clean help $(PROJECTS) 
 
 all: $(PROJECTS)
-
-jchat:
-ifneq (,$(jchat_config))
-	@echo "==== Building jchat ($(jchat_config)) ===="
-	@${MAKE} --no-print-directory -C . -f jchat.make config=$(jchat_config)
-endif
 
 jchat_server:
 ifneq (,$(jchat_server_config))
@@ -96,7 +78,6 @@ ifneq (,$(jchat_client_config))
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C . -f jchat.make clean
 	@${MAKE} --no-print-directory -C . -f jchat_server.make clean
 	@${MAKE} --no-print-directory -C . -f jchat_client.make clean
 
@@ -104,23 +85,22 @@ help:
 	@echo "Usage: make [config=name] [target]"
 	@echo ""
 	@echo "CONFIGURATIONS:"
-	@echo "  debug_linux32"
-	@echo "  debug_linux64"
-	@echo "  debug_osx32"
-	@echo "  debug_osx64"
-	@echo "  debug_win32"
-	@echo "  debug_win64"
-	@echo "  release_linux32"
-	@echo "  release_linux64"
-	@echo "  release_osx32"
-	@echo "  release_osx64"
-	@echo "  release_win32"
-	@echo "  release_win64"
+	@echo "  linux32_debug"
+	@echo "  linux64_debug"
+	@echo "  osx32_debug"
+	@echo "  osx64_debug"
+	@echo "  win32_debug"
+	@echo "  win64_debug"
+	@echo "  linux32_release"
+	@echo "  linux64_release"
+	@echo "  osx32_release"
+	@echo "  osx64_release"
+	@echo "  win32_release"
+	@echo "  win64_release"
 	@echo ""
 	@echo "TARGETS:"
 	@echo "   all (default)"
 	@echo "   clean"
-	@echo "   jchat"
 	@echo "   jchat_server"
 	@echo "   jchat_client"
 	@echo ""
