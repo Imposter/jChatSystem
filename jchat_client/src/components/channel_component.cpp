@@ -69,6 +69,9 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // TODO: Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
+    
+
+    // Trigger events
 
 
     return true;

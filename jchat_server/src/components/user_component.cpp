@@ -102,12 +102,21 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       return false;
     }
 
+    // Get the chat user
+    users_mutex_.lock();
+    std::shared_ptr<ChatUser> chat_user = users_[&client];
+    users_mutex_.unlock();
+
     // Check if the username is valid
     if (username.size() > JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_UsernameTooLong);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
+
+      // Trigger events
+      OnIdentifyCompleted(kUserMessageResult_UsernameTooLong, *chat_user);
+
       return true;
     }
 
@@ -116,19 +125,23 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       send_buffer.WriteUInt16(kUserMessageResult_InvalidUsername);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
+
+      // Trigger events
+      OnIdentifyCompleted(kUserMessageResult_InvalidUsername, *chat_user);
+
       return true;
     }
 
     // Check if the client is already identified
-    users_mutex_.lock();
-    std::shared_ptr<ChatUser> chat_user = users_[&client];
-    users_mutex_.unlock();
-
     if (chat_user && chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_AlreadyIdentified);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
+
+      // Trigger events
+      OnIdentifyCompleted(kUserMessageResult_AlreadyIdentified, *chat_user);
+
       return true;
     }
 
@@ -141,6 +154,10 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         server_->SendUnicast(client, kComponentType_User,
           kUserMessageType_Complete_Identify, send_buffer);
         users_mutex_.unlock();
+
+        // Trigger events
+        OnIdentifyCompleted(kUserMessageResult_UsernameInUse, *chat_user);
+
         return true;
       }
     }
@@ -148,6 +165,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     // Set as identified and hash the hostname
     chat_user->Identified = true;
+    chat_user->Username = username;
     chat_user->Hostname = Utility::HashString(chat_user->Hostname.c_str(),
       chat_user->Hostname.size());
 
@@ -155,6 +173,10 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     send_buffer.WriteUInt16(kUserMessageResult_Ok);
     server_->SendUnicast(client, kComponentType_User,
       kUserMessageType_Complete_Identify, send_buffer);
+
+    // Trigger events
+    OnIdentifyCompleted(kUserMessageResult_Ok, *chat_user);
+    OnIdentified(*chat_user);
 
     return true;
   }
