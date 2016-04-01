@@ -11,6 +11,7 @@
 #include "protocol/version.h"
 #include "protocol/components/user_message_type.h"
 #include "utility.hpp"
+#include "string.hpp"
 
 namespace jchat {
 UserComponent::UserComponent() {
@@ -65,12 +66,15 @@ void UserComponent::OnClientConnected(RemoteChatClient &client) {
   users_[&client] = chat_user;
   users_mutex_.unlock();
 
+  // Set as unidentified
+  chat_user->Identified = false;
+
   // Give the client a guest username (which will prevent it from accessing
-  // anything until it has authenticated)
+  // anything until it has identified)
   chat_user->Username = "guest-" + std::to_string(Utility::Random(100000,
     999999));
 
-  // Set the IP address as the endpoint until the client authenticates
+  // Set the IP address as the endpoint until the client identifies
   chat_user->Hostname = client.Endpoint.GetAddressString();
 }
 
@@ -92,6 +96,68 @@ ComponentType UserComponent::GetType() {
 
 bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
   TypedBuffer &buffer) {
+  if (message_type == kUserMessageType_Identify) {
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+
+    // Check if the username is valid
+    if (username.size() > JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_UsernameTooLong);
+      server_->SendUnicast(client, kComponentType_User,
+        kUserMessageType_Complete_Identify, send_buffer);
+      return true;
+    }
+
+    if (String::Contains(username, "#")) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_InvalidUsername);
+      server_->SendUnicast(client, kComponentType_User,
+        kUserMessageType_Complete_Identify, send_buffer);
+      return true;
+    }
+
+    // Check if the client is already identified
+    users_mutex_.lock();
+    std::shared_ptr<ChatUser> chat_user = users_[&client];
+    users_mutex_.unlock();
+
+    if (chat_user && chat_user->Identified) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_AlreadyIdentified);
+      server_->SendUnicast(client, kComponentType_User,
+        kUserMessageType_Complete_Identify, send_buffer);
+      return true;
+    }
+
+    // Check if the username is in use
+    users_mutex_.lock();
+    for (auto &pair : users_) {
+      if (pair.second->Identified && pair.second->Username == username) {
+        TypedBuffer send_buffer = server_->CreateBuffer();
+        send_buffer.WriteUInt16(kUserMessageResult_UsernameInUse);
+        server_->SendUnicast(client, kComponentType_User,
+          kUserMessageType_Complete_Identify, send_buffer);
+        users_mutex_.unlock();
+        return true;
+      }
+    }
+    users_mutex_.unlock();
+
+    // Set as identified and hash the hostname
+    chat_user->Identified = true;
+    chat_user->Hostname = Utility::HashString(chat_user->Hostname.c_str(),
+      chat_user->Hostname.size());
+
+    TypedBuffer send_buffer = server_->CreateBuffer();
+    send_buffer.WriteUInt16(kUserMessageResult_Ok);
+    server_->SendUnicast(client, kComponentType_User,
+      kUserMessageType_Complete_Identify, send_buffer);
+
+    return true;
+  }
 
   return false;
 }

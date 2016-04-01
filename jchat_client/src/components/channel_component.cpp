@@ -62,11 +62,14 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       return false;
     }
     OnJoinCompleted(static_cast<ChannelMessageResult>(message_result));
-    if (message_result != kChannelMessageResult_Ok) {
+    if (message_result != kChannelMessageResult_Ok
+      && message_result != kChannelMessageResult_ChannelCreated) {
       return true;
     }
 
     // TODO: Create the ChatChannel and do necessary actions
+    auto chat_channel = std::make_shared<ChatChannel>();
+
 
     return true;
   } else if (message_type == kChannelMessageType_LeaveChannel_Complete) {
@@ -75,7 +78,8 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       return false;
     }
     OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result));
-    if (message_result != kChannelMessageResult_Ok) {
+    if (message_result != kChannelMessageResult_Ok
+      && message_result != kChannelMessageResult_ChannelDestroyed) {
       return true;
     }
 

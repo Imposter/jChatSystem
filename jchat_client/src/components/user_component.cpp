@@ -16,7 +16,6 @@ UserComponent::UserComponent() {
 }
 
 UserComponent::~UserComponent() {
-  user_.reset();
 }
 
 bool UserComponent::Initialize(ChatClient &client) {
@@ -46,8 +45,26 @@ ComponentType UserComponent::GetType() {
 }
 
 bool UserComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
+  if (message_type == kUserMessageType_Complete_Identify) {
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    OnIdentified(static_cast<UserMessageResult>(message_result));
+    if (message_result == kUserMessageResult_Ok) {
+      user_->Identified = true;
+    }
 
+    return true;
+  }
 
   return false;
+}
+
+bool UserComponent::Identify(std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_User, kUserMessageType_Identify,
+    buffer);
 }
 }

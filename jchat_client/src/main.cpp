@@ -20,10 +20,22 @@
 int main(int argc, char **argv) {
   std::cout << "jChatSystem - Client" << std::endl;
 
+  // Create the chat client
   jchat::ChatClient chat_client("127.0.0.1", 9998);
+
+  // Handle client events
+  chat_client.OnDisconnected.Add([]() {
+    std::cout << "Disconnected from server" << std::endl;
+    exit(0);
+    return true;
+  });
+
+  // Create the chat components
   jchat::SystemComponent system_component;
   jchat::UserComponent user_component;
   jchat::ChannelComponent channel_component;
+
+  // Handle any API events
   system_component.OnHelloCompleted.Add([](jchat::SystemMessageResult result) {
     if (result == jchat::kSystemMessageResult_Ok) {
       std::cout << "System: Hello succeeded" << std::endl;
@@ -33,14 +45,27 @@ int main(int argc, char **argv) {
     }
     return true;
   });
+  user_component.OnIdentified.Add([](jchat::UserMessageResult result) {
+    if (result == jchat::kUserMessageResult_Ok) {
+      std::cout << "User: Successfully identified" << std::endl;
+    } else if (result == jchat::kUserMessageResult_InvalidUsername) {
+      std::cout << "User: Invalid username!" << std::endl;
+    } else if (result == jchat::kUserMessageResult_UsernameInUse) {
+      std::cout << "User: Username in use!" << std::endl;
+    } else if (result == jchat::kUserMessageResult_UsernameTooLong) {
+      std::cout << "User: Username too long!" << std::endl;
+    } else if (result == jchat::kUserMessageResult_AlreadyIdentified) {
+      std::cout << "User: Already identified!" << std::endl;
+    }
+    return true;
+  });
+
+  // Add the components to the client instance
   chat_client.AddComponent(&system_component);
   chat_client.AddComponent(&user_component);
   chat_client.AddComponent(&channel_component);
-  chat_client.OnDisconnected.Add([]() {
-    std::cout << "Disconnected from server" << std::endl;
-    exit(0);
-    return true;
-  });
+
+  // Connect to the server and read input
   if (chat_client.Connect()) {
     std::cout << "Connected to "
               << chat_client.GetRemoteEndpoint().ToString()
@@ -75,7 +100,7 @@ int main(int argc, char **argv) {
 
       if (command == "identify" && arguments.size() == 1) {
         std::string &username = arguments[0];
-        // TODO: Implement
+        user_component.Identify(username);
       } else if (command == "join" && arguments.size() == 1) {
         std::string &target = arguments[0];
         // TODO: Implement
