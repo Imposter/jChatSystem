@@ -163,14 +163,14 @@ public:
     read_buffer_.resize(JCHAT_TCP_CLIENT_BUFFER_SIZE);
 
 #if defined(OS_LINUX)
-		uint32_t flags = fcntl(client_socket, F_GETFL, 0);
-		if (flags != SOCKET_ERROR) {
-			flags |= O_NONBLOCK;
-			fcntl(client_socket, F_SETFL, flags);
-		}
+	uint32_t flags = fcntl(client_socket, F_GETFL, 0);
+	if (flags != SOCKET_ERROR) {
+	  flags |= O_NONBLOCK;
+	  fcntl(client_socket, F_SETFL, flags);
+	}
 #elif defined(OS_WIN)
-		unsigned int blocking = 1;
-		ioctlsocket(client_socket, FIONBIO, &blocking);
+	u_long blocking = 1;
+	ioctlsocket(client_socket, FIONBIO, &blocking);
 #endif
   }
 
@@ -224,7 +224,7 @@ public:
 			}
 		} else {
 #elif defined(OS_WIN)
-		unsigned int blocking = 1;
+		u_long blocking = 1;
 		if (ioctlsocket(client_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
 #endif
       closesocket(client_socket_);
