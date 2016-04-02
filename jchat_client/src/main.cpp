@@ -114,6 +114,34 @@ int main(int argc, char **argv) {
     }
     return true;
   });
+  channel_component->OnChannelJoined.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " joined " << channel.Name
+        << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelLeft.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " left " << channel.Name
+        << std::endl;
+    }
+
+    return true;
+  });
 
   // Add the components to the client instance
   chat_client.AddComponent(system_component);
@@ -169,7 +197,7 @@ int main(int argc, char **argv) {
           " ");
         // TODO: Implement
       } else if (command == "quit" && arguments.size() == 0) {
-		exit(0);
+        exit(0);
       } else {
         std::cout << "Invalid command" << std::endl;
         continue;

@@ -231,6 +231,100 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     channels_mutex_.unlock();
 
     return true;
+  } else if (message_type == kChannelMessageType_JoinChannel) {
+    // Read buffer
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    // Find the channel and add the user
+    channels_mutex_.lock();
+    for (auto &chat_channel : channels_) {
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        // Create ChatUser
+        auto user = std::make_shared<ChatUser>();
+        user->Enabled = true;
+        user->Identified = true;
+        user->Username = username;
+        user->Hostname = hostname;
+
+        chat_channel->ClientsMutex.lock();
+        chat_channel->Clients.push_back(user);
+        chat_channel->ClientsMutex.unlock();
+
+        // Trigger events
+        OnChannelJoined(*chat_channel, *user);
+
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    return true;
+  } else if (message_type == kChannelMessageType_LeaveChannel) {
+    // Read buffer
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    // Find the channel and remove the user
+    channels_mutex_.lock();
+    for (auto &chat_channel : channels_) {
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        // Remove from clients
+        chat_channel->ClientsMutex.lock();
+        for (auto it = chat_channel->Clients.begin();
+          it != chat_channel->Clients.end();) {
+          std::shared_ptr<ChatUser> &user = *it;
+          if (user->Username == username && user->Hostname == hostname) {
+            // Trigger events
+            OnChannelLeft(*chat_channel, *user);
+            chat_channel->Clients.erase(it);
+            break;
+          }
+        }
+        chat_channel->ClientsMutex.unlock();
+
+        // Remove from operators
+        chat_channel->OperatorsMutex.lock();
+        for (auto it = chat_channel->Operators.begin();
+          it != chat_channel->Operators.end();) {
+          std::shared_ptr<ChatUser> &user = *it;
+          if (user->Username == username && user->Hostname == hostname) {
+            chat_channel->Operators.erase(it);
+            break;
+          }
+        }
+        chat_channel->OperatorsMutex.unlock();
+
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    return true;
   }
 
   return false;
