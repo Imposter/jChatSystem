@@ -73,6 +73,14 @@ bool UserComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
   return false;
 }
 
+bool UserComponent::GetChatUser(std::shared_ptr<ChatUser> &out_user) {
+  if (user_) {
+    out_user = user_;
+    return true;
+  }
+  return false;
+}
+
 bool UserComponent::Identify(std::string username) {
   TypedBuffer buffer = client_->CreateBuffer();
   buffer.WriteString(username);

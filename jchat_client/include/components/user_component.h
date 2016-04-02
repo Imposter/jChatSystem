@@ -46,6 +46,8 @@ public:
   virtual bool Handle(uint16_t message_type, TypedBuffer &buffer) override;
 
   // API functions
+  bool GetChatUser(std::shared_ptr<ChatUser> &out_user);
+
   bool Identify(std::string username);
 
   // API events

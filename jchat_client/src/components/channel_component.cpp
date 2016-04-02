@@ -7,6 +7,7 @@
 */
 
 #include "components/channel_component.h"
+#include "components/user_component.h"
 #include "chat_client.h"
 #include "protocol/version.h"
 #include "protocol/components/channel_message_type.h"
@@ -61,45 +62,86 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-	std::string channel_name;
-	if (!buffer.ReadString(channel_name)) {
-		return false;
-	}
-    OnJoinCompleted(static_cast<ChannelMessageResult>(message_result), channel_name);
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+    OnJoinCompleted(static_cast<ChannelMessageResult>(message_result),
+      channel_name);
     if (message_result != kChannelMessageResult_Ok
       && message_result != kChannelMessageResult_ChannelCreated) {
       return true;
     }
 
-    // TODO: Create the ChatChannel and do necessary actions
+    // Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
-	if (!buffer.ReadString(chat_channel->Name)) {
-		return false;
-	}
+    if (!buffer.ReadString(chat_channel->Name)) {
+      return false;
+    }
 
-	if (message_result == kChannelMessageResult_ChannelCreated) {
+    // Get user component
+	  std::shared_ptr<UserComponent> user_component;
+	  if (!client_->GetComponent(kComponentType_User, user_component)) {
+      // Internal error, disconnect client
+		  return false;
+	  }
 
-	}
+	  // Get the chat client
+	  std::shared_ptr<ChatUser> chat_user;
+	  if (!user_component->GetChatUser(chat_user)) {
+		  // Internal error, disconnect client
+		  return false;
+	  }
 
-	// TODO: If they created the channel, add them as the operator and only client until info changes
-	
-	// TODO: Parse channel information
-	uint64_t operators_count = 0;
-	if (!buffer.ReadUInt64(operators_count)) {
-		return false;
-	}
+    // Add the local user
+    chat_channel->Clients.push_back(chat_user);
 
-	for (size_t i = 0; i < operators_count; i++) {
-		auto chat_user = std::make_shared<ChatUser>();
-	}
+    if (message_result == kChannelMessageResult_ChannelCreated) {
+      chat_channel->Operators.push_back(chat_user);
 
-	// TODO: Handle notifications that a user has joined/left a channel
-	// TODO: Handle SendMessage
-	// TODO: Handle KickUser
-	// TODO: Handle BanUser
+      return true;
+    }
 
-	// TODO: Add SendMessage to UserComponent
-    
+    uint64_t users_count = 0;
+    if (!buffer.ReadUInt64(users_count)) {
+      return false;
+    }
+
+    for (size_t i = 0; i < users_count; i++) {
+      auto user = std::make_shared<ChatUser>();
+      user->Enabled = true;
+      user->Identified = true;
+
+      if (!buffer.ReadString(user->Username)) {
+        return false;
+      }
+      if (!buffer.ReadString(user->Hostname)) {
+        return false;
+      }
+      bool is_operator = false;
+      if (!buffer.ReadBoolean(is_operator)) {
+        return false;
+      }
+
+      chat_channel->Clients.push_back(user);
+      if (is_operator) {
+        chat_channel->Operators.push_back(user);
+      }
+    }
+
+    // TODO: Read bans
+
+    // Add the channel to the channel list
+    channels_mutex_.lock();
+    channels_.push_back(chat_channel);
+    channels_mutex_.unlock();
+
+    // TODO: Handle notifications that a user has joined/left a channel
+    // TODO: Handle SendMessage
+    // TODO: Handle KickUser
+    // TODO: Handle BanUser
+    // TODO: Add SendMessage to UserComponent
+
 
     // Trigger events
 

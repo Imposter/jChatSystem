@@ -10,7 +10,7 @@
 #define jchat_common_version_h_
 
 #ifndef JCHAT_CHAT_PROTOCOL_VERSION
-#define JCHAT_CHAT_PROTOCOL_VERSION "1.0.1"
+#define JCHAT_CHAT_PROTOCOL_VERSION "1.2.6"
 #endif // JCHAT_CHAT_PROTOCOL_VERSION
 
 #endif // jchat_common_version_h_

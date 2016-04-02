@@ -25,6 +25,7 @@ enum ChannelMessageResult : uint16_t {
   // JoinChannel
   kChannelMessageResult_ChannelCreated,
   kChannelMessageResult_AlreadyInChannel,
+  kChannelMessageResult_BannedFromChannel,
   kChannelMessageResult_UserJoined,
 
   // LeaveChannel

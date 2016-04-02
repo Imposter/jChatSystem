@@ -76,11 +76,12 @@ void ChannelComponent::OnClientDisconnected(RemoteChatClient &client) {
         // Notify all clients in that channel that the client left
         TypedBuffer clients_buffer = server_->CreateBuffer();
         clients_buffer.WriteUInt16(kChannelMessageResult_UserLeft);
+        clients_buffer.WriteString(channel->Name);
         clients_buffer.WriteString(chat_user->Username);
         clients_buffer.WriteString(chat_user->Hostname);
 
         for (auto &pair : channel->Clients) {
-          if (pair.second->Enabled) {
+          if (pair.first != &client && pair.second->Enabled) {
             server_->SendUnicast(pair.first, kComponentType_Channel,
               kChannelMessageType_LeaveChannel, clients_buffer);
           }
@@ -141,12 +142,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
-	  send_buffer.WriteString(channel_name);
+	    send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_NotIdentified, channel_name, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_NotIdentified, channel_name,
+        *chat_user);
 
       return true;
     }
@@ -155,12 +157,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!String::Contains(channel_name, "#")) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
-	  send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_InvalidChannelName, channel_name,
+        *chat_user);
 
       return true;
     }
@@ -192,12 +195,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // the operator operator and member of it
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_ChannelCreated);
-	  send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger the events
-      OnJoinCompleted(kChannelMessageResult_ChannelCreated, channel_name, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_ChannelCreated, channel_name,
+        *chat_user);
 
       OnChannelCreated(*chat_channel);
       OnChannelJoined(*chat_channel, *chat_user);
@@ -212,15 +216,39 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_AlreadyInChannel);
-	  send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(chat_channel->Name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_AlreadyInChannel, chat_channel->Name, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_AlreadyInChannel,
+        chat_channel->Name, *chat_user);
 
       return true;
     }
+
+    // Check if the user is banned
+    chat_channel->BannedUsersMutex.lock();
+    std::string chat_user_hostinfo = chat_user->Username + "@"
+      + chat_user->Hostname;
+    for (auto &banned_user : chat_channel->BannedUsers) {
+      if (banned_user == chat_user_hostinfo) {
+        chat_channel->BannedUsersMutex.unlock();
+
+        TypedBuffer send_buffer = server_->CreateBuffer();
+        send_buffer.WriteUInt16(kChannelMessageResult_BannedFromChannel);
+        send_buffer.WriteString(chat_channel->Name);
+        server_->SendUnicast(client, kComponentType_Channel,
+          kChannelMessageType_JoinChannel_Complete, send_buffer);
+
+        // Trigger events
+        OnJoinCompleted(kChannelMessageResult_BannedFromChannel,
+          chat_channel->Name, *chat_user);
+
+        return true;
+      }
+    }
+    chat_channel->BannedUsersMutex.unlock();
 
     // Add the user to the channel
     chat_channel->Clients[&client] = chat_user;
@@ -232,32 +260,34 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     client_buffer.WriteUInt16(kChannelMessageResult_Ok); // Channel joined
 
     chat_channel->OperatorsMutex.lock();
-	client_buffer.WriteString(chat_channel->Name);
-    client_buffer.WriteUInt64(chat_channel->Operators.size());
-    for (auto &pair : chat_channel->Operators) {
-      if (pair.second->Enabled) {
-        client_buffer.WriteString(pair.second->Username);
-        client_buffer.WriteString(pair.second->Hostname);
-      }
-    }
-    chat_channel->OperatorsMutex.unlock();
-
     chat_channel->ClientsMutex.lock();
     client_buffer.WriteUInt64(chat_channel->Clients.size());
     for (auto &pair : chat_channel->Clients) {
-      if (pair.second->Enabled) {
+      if (pair.first != &client && pair.second->Enabled) {
         client_buffer.WriteString(pair.second->Username);
         client_buffer.WriteString(pair.second->Hostname);
+        client_buffer.WriteBoolean(
+          chat_channel->Operators.find(pair.first)
+          != chat_channel->Operators.end());
       }
     }
     chat_channel->ClientsMutex.unlock();
+    chat_channel->OperatorsMutex.unlock();
+
+    chat_channel->BannedUsersMutex.lock();
+    client_buffer.WriteUInt64(chat_channel->BannedUsers.size());
+    for (auto &banned_user : chat_channel->BannedUsers) {
+      client_buffer.WriteString(banned_user);
+    }
+    chat_channel->BannedUsersMutex.unlock();
+
     server_->SendUnicast(client, kComponentType_Channel,
       kChannelMessageType_JoinChannel_Complete, client_buffer);
 
     // Notify all clients in the channel that the user has joined
     TypedBuffer clients_buffer = server_->CreateBuffer();
     clients_buffer.WriteUInt16(kChannelMessageResult_UserJoined);
-	clients_buffer.WriteString(chat_channel->Name);
+    clients_buffer.WriteString(chat_channel->Name);
     clients_buffer.WriteString(chat_user->Username);
     clients_buffer.WriteString(chat_user->Hostname);
 
@@ -299,12 +329,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
-	  send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_NotIdentified, channel_name, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_NotIdentified, channel_name,
+        *chat_user);
 
       return true;
     }
@@ -313,12 +344,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!String::Contains(channel_name, "#")) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
-	  send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name,
+        *chat_user);
 
       return true;
     }
@@ -337,12 +369,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_channel) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
-	  send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name,
+        *chat_user);
 
       return true;
     }
@@ -353,7 +386,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // Notify all clients in that channel that the client left
       TypedBuffer clients_buffer = server_->CreateBuffer();
       clients_buffer.WriteUInt16(kChannelMessageResult_UserLeft);
-	  clients_buffer.WriteString(chat_channel->Name);
+      clients_buffer.WriteString(chat_channel->Name);
       clients_buffer.WriteString(chat_user->Username);
       clients_buffer.WriteString(chat_user->Hostname);
 
@@ -381,12 +414,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // Notify the client that they are not in the channel
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotInChannel);
-	  send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(chat_channel->Name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_NotInChannel, chat_channel->Name, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_NotInChannel, chat_channel->Name,
+        *chat_user);
 
       return true;
     }
@@ -402,7 +436,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // Notify the client that they left the channel
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kChannelMessageResult_Ok);
-	send_buffer.WriteString(chat_channel->Name);
+    send_buffer.WriteString(chat_channel->Name);
     server_->SendUnicast(client, kComponentType_Channel,
       kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
