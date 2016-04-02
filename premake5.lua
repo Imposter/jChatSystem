@@ -14,14 +14,14 @@ workspace "jchat"
 		filter "platforms:Win32"
 			architecture "x32"
 			links { "ws2_32" }
-			
+
 		filter "platforms:Win64"
 			architecture "x64"
 			links { "ws2_32" }
-			
+
 		filter "platforms:Unix32"
 			architecture "x32"
-			
+
 		filter "platforms:Unix64"
 			architecture "x64"
 
@@ -48,14 +48,14 @@ workspace "jchat"
 		filter "platforms:Win32"
 			architecture "x32"
 			links { "ws2_32" }
-			
+
 		filter "platforms:Win64"
 			architecture "x64"
 			links { "ws2_32" }
-			
+
 		filter "platforms:Unix32"
 			architecture "x32"
-			
+
 		filter "platforms:Unix64"
 			architecture "x64"
 

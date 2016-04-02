@@ -40,12 +40,12 @@ int main(int argc, char **argv) {
   });
 
   // Create the chat components
-  jchat::SystemComponent system_component;
-  jchat::UserComponent user_component;
-  jchat::ChannelComponent channel_component;
+  auto system_component = std::make_shared<jchat::SystemComponent>();
+  auto user_component = std::make_shared<jchat::UserComponent>();
+  auto channel_component = std::make_shared<jchat::ChannelComponent>();
 
   // Handle any API events
-  system_component.OnHelloCompleted.Add([](jchat::SystemMessageResult result) {
+  system_component->OnHelloCompleted.Add([](jchat::SystemMessageResult result) {
     if (result == jchat::kSystemMessageResult_Ok) {
       std::cout << "System: Hello succeeded" << std::endl;
     } else if (result == jchat::kSystemMessageResult_InvalidProtocolVersion) {
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     }
     return true;
   });
-  user_component.OnIdentified.Add([](jchat::UserMessageResult result) {
+  user_component->OnIdentified.Add([](jchat::UserMessageResult result) {
     if (result == jchat::kUserMessageResult_Ok) {
       std::cout << "User: Successfully identified" << std::endl;
     } else if (result == jchat::kUserMessageResult_InvalidUsername) {
@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
   });
 
   // Add the components to the client instance
-  chat_client.AddComponent(&system_component);
-  chat_client.AddComponent(&user_component);
-  chat_client.AddComponent(&channel_component);
+  chat_client.AddComponent(system_component);
+  chat_client.AddComponent(user_component);
+  chat_client.AddComponent(channel_component);
 
   // Connect to the server and read input
   if (chat_client.Connect()) {
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
       if (command == "identify" && arguments.size() == 1) {
         std::string &username = arguments[0];
-        user_component.Identify(username);
+        user_component->Identify(username);
       } else if (command == "join" && arguments.size() == 1) {
         std::string &target = arguments[0];
         // TODO: Implement

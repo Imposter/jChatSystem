@@ -87,7 +87,7 @@ bool ChatServer::Stop() {
   return true;
 }
 
-bool ChatServer::AddComponent(ChatComponent *component) {
+bool ChatServer::AddComponent(std::shared_ptr<ChatComponent> component) {
   components_mutex_.lock();
   for (auto it = components_.begin(); it != components_.end(); ++it) {
     if (*it == component) {
@@ -105,7 +105,7 @@ bool ChatServer::AddComponent(ChatComponent *component) {
   return true;
 }
 
-bool ChatServer::RemoveComponent(ChatComponent *component) {
+bool ChatServer::RemoveComponent(std::shared_ptr<ChatComponent> component) {
   components_mutex_.lock();
   for (auto it = components_.begin(); it != components_.end(); ++it) {
     if (*it == component) {
@@ -124,16 +124,16 @@ bool ChatServer::RemoveComponent(ChatComponent *component) {
 }
 
 bool ChatServer::GetComponent(ComponentType component_type,
-  ChatComponent **out_component) {
+  std::shared_ptr<ChatComponent> &out_component) {
   // TODO/NOTE: This causes a crash when locking twice, so what
   // we need to do here is duplicate the component vector
-  // and search that, also use std::shared_ptr internally 
+  // and search that, also use std::shared_ptr internally
   // for these...
-  components_mutex_.try_lock(); 
+  components_mutex_.try_lock();
   for (auto component : components_) {
     if (component->GetType() == component_type) {
       components_mutex_.unlock();
-      *out_component = component;
+      out_component = component;
       return true;
     }
   }

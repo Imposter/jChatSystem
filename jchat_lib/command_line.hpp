@@ -28,10 +28,10 @@ public:
         argument = argument.substr(1);
         if (i + 1 < argc) {
           std::string value = argv[i + 1];
-    	     if (!value.empty() && value[0] != '-') {
-             arguments_.insert(std::make_pair(argument, value));
-             inserted = true;
-           }
+          if (!value.empty() && value[0] != '-') {
+            arguments_.insert(std::make_pair(argument, value));
+            inserted = true;
+          }
          } else if (!inserted) {
            arguments_.insert(std::make_pair(argument, ""));
          }
@@ -45,26 +45,26 @@ public:
 
   int32_t GetInt32(std::string key_name, int32_t default_value) {
     auto value = arguments_.find(key_name);
-	if (value == arguments_.end()) {
-	  return default_value;
-	}
-	return atoi(value->second.c_str());
+    if (value == arguments_.end()) {
+      return default_value;
+    }
+    return atoi(value->second.c_str());
   }
 
   std::string GetString(std::string key_name, std::string default_value) {
     auto value = arguments_.find(key_name);
-	if (value == arguments_.end()) {
-	  return default_value;
-	}
-	return value->second;
+    if (value == arguments_.end()) {
+      return default_value;
+    }
+    return value->second;
   }
 
   friend std::ostream &operator<<(std::ostream &stream,
-	CommandLine &command_line) {
-	stream << "Command line: ";
-	if (command_line.arguments_.size() > 0) {
-	  stream << std::endl;
-	}
+    CommandLine &command_line) {
+    stream << "Command line: ";
+    if (command_line.arguments_.size() > 0) {
+      stream << std::endl;
+    }
     for (auto &pair : command_line.arguments_) {
       stream << "\t- " << pair.first << " = " << pair.second << std::endl;
     }

@@ -56,7 +56,7 @@ bool ChatClient::Disconnect() {
   return true;
 }
 
-bool ChatClient::AddComponent(ChatComponent *component) {
+bool ChatClient::AddComponent(std::shared_ptr<ChatComponent> component) {
   components_mutex_.lock();
   for (auto it = components_.begin(); it != components_.end(); ++it) {
     if (*it == component) {
@@ -74,12 +74,12 @@ bool ChatClient::AddComponent(ChatComponent *component) {
   return true;
 }
 
-bool ChatClient::RemoveComponent(ChatComponent *component) {
+bool ChatClient::RemoveComponent(std::shared_ptr<ChatComponent> component) {
   components_mutex_.lock();
   for (auto it = components_.begin(); it != components_.end(); ++it) {
     if (*it == component) {
       if (!component->Shutdown()) {
-		components_mutex_.unlock();
+        components_mutex_.unlock();
         return false;
       }
       components_.erase(it);
@@ -93,12 +93,12 @@ bool ChatClient::RemoveComponent(ChatComponent *component) {
 }
 
 bool ChatClient::GetComponent(ComponentType component_type,
-  ChatComponent **out_component) {
+  std::shared_ptr<ChatComponent> &out_component) {
   components_mutex_.lock();
   for (auto component : components_) {
     if (component->GetType() == component_type) {
       components_mutex_.unlock();
-      *out_component = component;
+      out_component = component;
       return true;
     }
   }

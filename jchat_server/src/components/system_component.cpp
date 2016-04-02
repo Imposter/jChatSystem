@@ -38,7 +38,7 @@ bool SystemComponent::OnStop() {
 }
 
 void SystemComponent::OnClientConnected(RemoteChatClient &client) {
-  
+
 }
 
 void SystemComponent::OnClientDisconnected(RemoteChatClient &client) {
@@ -63,8 +63,8 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
 
 	// Get user component
-	UserComponent *user_component = 0;
-	if (!server_->GetComponent(kComponentType_User, &user_component)) {
+	std::shared_ptr<UserComponent> user_component;
+	if (!server_->GetComponent(kComponentType_User, user_component)) {
 		// Internal error, disconnect client
 		return false;
 	}

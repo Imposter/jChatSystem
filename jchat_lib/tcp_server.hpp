@@ -107,6 +107,7 @@ class TcpServer {
             (*tcp_client)->is_connected_ = false;
             closesocket((*tcp_client)->client_socket_);
             OnClientDisconnected(**tcp_client);
+            delete *tcp_client;
             tcp_client = accepted_clients_.erase(tcp_client);
             continue;
           }
@@ -125,8 +126,8 @@ public:
     : hostname_(hostname), port_(port), is_listening_(false),
     listen_socket_(0), listen_endpoint_("0.0.0.0", port) {
 #if defined(OS_WIN)
-	// Initialize Winsock
-	WSAStartup(MAKEWORD(2, 2), &wsa_data_);
+    // Initialize Winsock
+    WSAStartup(MAKEWORD(2, 2), &wsa_data_);
 #endif
 
     // Get remote address info
@@ -160,8 +161,8 @@ public:
       closesocket(listen_socket_);
 
 #if defined(OS_WIN)
-	  // Cleanup Winsock
-	  WSACleanup();
+      // Cleanup Winsock
+      WSACleanup();
 #endif
     }
 
@@ -208,7 +209,7 @@ public:
 #if defined(__CYGWIN__) || defined(__MINGW32__)
 	    unsigned int blocking = 1;
 #else
-		u_long blocking = 1;
+		  u_long blocking = 1;
 #endif
 		if (ioctlsocket(listen_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
 #endif

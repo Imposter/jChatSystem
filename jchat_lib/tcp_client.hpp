@@ -127,8 +127,8 @@ public:
     read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
 #if defined(OS_WIN)
-	// Initialize Winsock
-	WSAStartup(MAKEWORD(2, 2), &wsa_data_);
+    // Initialize Winsock
+    WSAStartup(MAKEWORD(2, 2), &wsa_data_);
 #endif
 
     // Get remote address info
@@ -163,18 +163,18 @@ public:
     read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
 #if defined(OS_LINUX)
-	uint32_t flags = fcntl(client_socket, F_GETFL, 0);
-	if (flags != SOCKET_ERROR) {
-	  flags |= O_NONBLOCK;
-	  fcntl(client_socket, F_SETFL, flags);
-	}
+  	uint32_t flags = fcntl(client_socket, F_GETFL, 0);
+  	if (flags != SOCKET_ERROR) {
+  	  flags |= O_NONBLOCK;
+  	  fcntl(client_socket, F_SETFL, flags);
+  	}
 #elif defined(OS_WIN)
 #if defined(__CYGWIN__) || defined(__MINGW32__)
-	unsigned int blocking = 1;
+    unsigned int blocking = 1;
 #else
-	u_long blocking = 1;
+    u_long blocking = 1;
 #endif
-	ioctlsocket(client_socket, FIONBIO, &blocking);
+    ioctlsocket(client_socket, FIONBIO, &blocking);
 #endif
   }
 
@@ -186,8 +186,8 @@ public:
       }
       closesocket(client_socket_);
 #if defined(OS_WIN)
-	  // Cleanup Winsock
-	  WSACleanup();
+      // Cleanup Winsock
+      WSACleanup();
 #endif
     }
   }
@@ -219,21 +219,21 @@ public:
     client_endpoint_.SetSocketEndpoint(client_endpoint);
 
 #if defined(OS_LINUX)
-	uint32_t flags = fcntl(client_socket_, F_GETFL, 0);
-	if (flags != SOCKET_ERROR) {
-	  flags |= O_NONBLOCK;
-		if (fcntl(client_socket_, F_SETFL, flags) == SOCKET_ERROR) {
-		  closesocket(client_socket_);
-		  return false;
-		}
-	} else {
+  	uint32_t flags = fcntl(client_socket_, F_GETFL, 0);
+  	if (flags != SOCKET_ERROR) {
+  	  flags |= O_NONBLOCK;
+  		if (fcntl(client_socket_, F_SETFL, flags) == SOCKET_ERROR) {
+  		  closesocket(client_socket_);
+  		  return false;
+  		}
+  	} else {
 #elif defined(OS_WIN)
 #if defined(__CYGWIN__) || defined(__MINGW32__)
-	  unsigned int blocking = 1;
+    unsigned int blocking = 1;
 #else
-	  u_long blocking = 1;
+    u_long blocking = 1;
 #endif
-	  if (ioctlsocket(client_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
+    if (ioctlsocket(client_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
 #endif
       closesocket(client_socket_);
       return false;

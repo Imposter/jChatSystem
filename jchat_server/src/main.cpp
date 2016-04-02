@@ -30,13 +30,13 @@ int main(int argc, char **argv) {
     command_line.GetString("ipaddress", "0.0.0.0").c_str(),
     command_line.GetInt32("port", 9998));
 
-  jchat::SystemComponent system_component;
-  jchat::UserComponent user_component;
-  jchat::ChannelComponent channel_component;
+  auto system_component = std::make_shared<jchat::SystemComponent>();
+  auto user_component = std::make_shared<jchat::UserComponent>();
+  auto channel_component = std::make_shared<jchat::ChannelComponent>();
 
-  chat_server.AddComponent(&system_component);
-  chat_server.AddComponent(&user_component);
-  chat_server.AddComponent(&channel_component);
+  chat_server.AddComponent(system_component);
+  chat_server.AddComponent(user_component);
+  chat_server.AddComponent(channel_component);
 
   chat_server.OnClientConnected.Add([](jchat::RemoteChatClient &client) {
     std::cout << "Client from "
