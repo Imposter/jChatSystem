@@ -112,11 +112,12 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (username.size() > JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_UsernameTooLong);
+	  send_buffer.WriteString(username);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
-      OnIdentifyCompleted(kUserMessageResult_UsernameTooLong, *chat_user);
+      OnIdentifyCompleted(kUserMessageResult_UsernameTooLong, username, *chat_user);
 
       return true;
     }
@@ -124,11 +125,12 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (String::Contains(username, "#")) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_InvalidUsername);
+	  send_buffer.WriteString(username);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
-      OnIdentifyCompleted(kUserMessageResult_InvalidUsername, *chat_user);
+      OnIdentifyCompleted(kUserMessageResult_InvalidUsername, username, *chat_user);
 
       return true;
     }
@@ -137,11 +139,12 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (chat_user && chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_AlreadyIdentified);
+	  send_buffer.WriteString(username);
       server_->SendUnicast(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
-      OnIdentifyCompleted(kUserMessageResult_AlreadyIdentified, *chat_user);
+      OnIdentifyCompleted(kUserMessageResult_AlreadyIdentified, username, *chat_user);
 
       return true;
     }
@@ -153,12 +156,13 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 		&& pair.second->Username == username) {
         TypedBuffer send_buffer = server_->CreateBuffer();
         send_buffer.WriteUInt16(kUserMessageResult_UsernameInUse);
+		send_buffer.WriteString(username);
         server_->SendUnicast(client, kComponentType_User,
           kUserMessageType_Complete_Identify, send_buffer);
         users_mutex_.unlock();
 
         // Trigger events
-        OnIdentifyCompleted(kUserMessageResult_UsernameInUse, *chat_user);
+        OnIdentifyCompleted(kUserMessageResult_UsernameInUse, username, *chat_user);
 
         return true;
       }
@@ -173,11 +177,13 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kUserMessageResult_Ok);
+	send_buffer.WriteString(chat_user->Username);
+	send_buffer.WriteString(chat_user->Hostname);
     server_->SendUnicast(client, kComponentType_User,
       kUserMessageType_Complete_Identify, send_buffer);
 
     // Trigger events
-    OnIdentifyCompleted(kUserMessageResult_Ok, *chat_user);
+    OnIdentifyCompleted(kUserMessageResult_Ok, chat_user->Hostname, *chat_user);
     OnIdentified(*chat_user);
 
     return true;

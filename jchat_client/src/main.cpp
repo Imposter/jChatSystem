@@ -54,17 +54,18 @@ int main(int argc, char **argv) {
     }
     return true;
   });
-  user_component->OnIdentified.Add([](jchat::UserMessageResult result) {
+  user_component->OnIdentified.Add([](jchat::UserMessageResult result, 
+	  std::string username) {
     if (result == jchat::kUserMessageResult_Ok) {
-      std::cout << "User: Successfully identified" << std::endl;
+      std::cout << "User: Successfully identified! (" << username << ")" << std::endl;
     } else if (result == jchat::kUserMessageResult_InvalidUsername) {
-      std::cout << "User: Invalid username!" << std::endl;
+      std::cout << "User: Invalid username! (" << username << ")" << std::endl;
     } else if (result == jchat::kUserMessageResult_UsernameInUse) {
-      std::cout << "User: Username in use!" << std::endl;
+      std::cout << "User: Username in use! (" << username << ")" << std::endl;
     } else if (result == jchat::kUserMessageResult_UsernameTooLong) {
-      std::cout << "User: Username too long!" << std::endl;
+      std::cout << "User: Username too long! (" << username << ")" << std::endl;
     } else if (result == jchat::kUserMessageResult_AlreadyIdentified) {
-      std::cout << "User: Already identified!" << std::endl;
+      std::cout << "User: Already identified! (" << username << ")" << std::endl;
     }
     return true;
   });

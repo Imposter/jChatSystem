@@ -146,7 +146,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_NotIdentified, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_NotIdentified, channel_name, *chat_user);
 
       return true;
     }
@@ -160,7 +160,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_InvalidChannelName, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
 
       return true;
     }
@@ -197,7 +197,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger the events
-      OnJoinCompleted(kChannelMessageResult_ChannelCreated, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_ChannelCreated, channel_name, *chat_user);
 
       OnChannelCreated(*chat_channel);
       OnChannelJoined(*chat_channel, *chat_user);
@@ -217,7 +217,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
       // Trigger events
-      OnJoinCompleted(kChannelMessageResult_AlreadyInChannel, *chat_user);
+      OnJoinCompleted(kChannelMessageResult_AlreadyInChannel, chat_channel->Name, *chat_user);
 
       return true;
     }
@@ -233,7 +233,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     chat_channel->OperatorsMutex.lock();
 	client_buffer.WriteString(chat_channel->Name);
-    client_buffer.WriteUInt32(chat_channel->Operators.size());
+    client_buffer.WriteUInt64(chat_channel->Operators.size());
     for (auto &pair : chat_channel->Operators) {
       if (pair.second->Enabled) {
         client_buffer.WriteString(pair.second->Username);
@@ -243,7 +243,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     chat_channel->OperatorsMutex.unlock();
 
     chat_channel->ClientsMutex.lock();
-    client_buffer.WriteUInt32(chat_channel->Clients.size());
+    client_buffer.WriteUInt64(chat_channel->Clients.size());
     for (auto &pair : chat_channel->Clients) {
       if (pair.second->Enabled) {
         client_buffer.WriteString(pair.second->Username);
@@ -271,7 +271,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     chat_channel->ClientsMutex.unlock();
 
     // Trigger the events
-    OnJoinCompleted(kChannelMessageResult_Ok, *chat_user);
+    OnJoinCompleted(kChannelMessageResult_Ok, chat_channel->Name, *chat_user);
     OnChannelJoined(*chat_channel, *chat_user);
 
     return true;
@@ -304,7 +304,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_NotIdentified, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_NotIdentified, channel_name, *chat_user);
 
       return true;
     }
@@ -318,7 +318,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
 
       return true;
     }
@@ -342,7 +342,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_InvalidChannelName, channel_name, *chat_user);
 
       return true;
     }
@@ -386,7 +386,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
       // Trigger events
-      OnLeaveCompleted(kChannelMessageResult_NotInChannel, *chat_user);
+      OnLeaveCompleted(kChannelMessageResult_NotInChannel, chat_channel->Name, *chat_user);
 
       return true;
     }
@@ -407,7 +407,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
     // Trigger events
-    OnLeaveCompleted(kChannelMessageResult_Ok, *chat_user);
+    OnLeaveCompleted(kChannelMessageResult_Ok, chat_channel->Name, *chat_user);
 
     return true;
   }

@@ -45,8 +45,8 @@ public:
 
 
   // API events
-  Event<ChannelMessageResult, ChatUser &> OnJoinCompleted;
-  Event<ChannelMessageResult, ChatUser &> OnLeaveCompleted;
+  Event<ChannelMessageResult, std::string &, ChatUser &> OnJoinCompleted;
+  Event<ChannelMessageResult, std::string &, ChatUser &> OnLeaveCompleted;
 
   Event<ChatChannel &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;

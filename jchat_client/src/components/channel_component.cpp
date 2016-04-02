@@ -61,7 +61,11 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-    OnJoinCompleted(static_cast<ChannelMessageResult>(message_result));
+	std::string channel_name;
+	if (!buffer.ReadString(channel_name)) {
+		return false;
+	}
+    OnJoinCompleted(static_cast<ChannelMessageResult>(message_result), channel_name);
     if (message_result != kChannelMessageResult_Ok
       && message_result != kChannelMessageResult_ChannelCreated) {
       return true;
@@ -69,8 +73,32 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // TODO: Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
+	if (!buffer.ReadString(chat_channel->Name)) {
+		return false;
+	}
 
+	if (message_result == kChannelMessageResult_ChannelCreated) {
 
+	}
+
+	// TODO: If they created the channel, add them as the operator and only client until info changes
+	
+	// TODO: Parse channel information
+	uint64_t operators_count = 0;
+	if (!buffer.ReadUInt64(operators_count)) {
+		return false;
+	}
+
+	for (size_t i = 0; i < operators_count; i++) {
+		auto chat_user = std::make_shared<ChatUser>();
+	}
+
+	// TODO: Handle notifications that a user has joined/left a channel
+	// TODO: Handle SendMessage
+	// TODO: Handle KickUser
+	// TODO: Handle BanUser
+
+	// TODO: Add SendMessage to UserComponent
     
 
     // Trigger events
@@ -82,7 +110,11 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-    OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result));
+	std::string channel_name;
+	if (!buffer.ReadString(channel_name)) {
+		return false;
+	}
+    OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result), channel_name);
     if (message_result != kChannelMessageResult_Ok
       && message_result != kChannelMessageResult_ChannelDestroyed) {
       return true;

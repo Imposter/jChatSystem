@@ -42,8 +42,8 @@ public:
   bool LeaveChannel(std::string channel_name);
 
   // API events
-  Event<ChannelMessageResult> OnJoinCompleted;
-  Event<ChannelMessageResult> OnLeaveCompleted;
+  Event<ChannelMessageResult, std::string &> OnJoinCompleted;
+  Event<ChannelMessageResult, std::string &> OnLeaveCompleted;
 
   Event<ChatChannel &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;

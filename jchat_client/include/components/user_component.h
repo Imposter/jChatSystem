@@ -49,7 +49,7 @@ public:
   bool Identify(std::string username);
 
   // API events
-  Event<UserMessageResult> OnIdentified;
+  Event<UserMessageResult, std::string &> OnIdentified;
 };
 }
 

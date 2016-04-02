@@ -48,7 +48,7 @@ public:
     std::shared_ptr<ChatUser> &out_user);
 
   // API events
-  Event<UserMessageResult, ChatUser &> OnIdentifyCompleted;
+  Event<UserMessageResult, std::string &, ChatUser &> OnIdentifyCompleted;
 
   Event<ChatUser &> OnIdentified;
 };
