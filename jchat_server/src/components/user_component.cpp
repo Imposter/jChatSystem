@@ -113,7 +113,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_UsernameTooLong);
 	  send_buffer.WriteString(username);
-      server_->SendUnicast(client, kComponentType_User,
+      server_->Send(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
@@ -126,7 +126,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_InvalidUsername);
 	  send_buffer.WriteString(username);
-      server_->SendUnicast(client, kComponentType_User,
+      server_->Send(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
@@ -140,7 +140,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kUserMessageResult_AlreadyIdentified);
 	  send_buffer.WriteString(username);
-      server_->SendUnicast(client, kComponentType_User,
+      server_->Send(client, kComponentType_User,
         kUserMessageType_Complete_Identify, send_buffer);
 
       // Trigger events
@@ -157,7 +157,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         TypedBuffer send_buffer = server_->CreateBuffer();
         send_buffer.WriteUInt16(kUserMessageResult_UsernameInUse);
 		send_buffer.WriteString(username);
-        server_->SendUnicast(client, kComponentType_User,
+        server_->Send(client, kComponentType_User,
           kUserMessageType_Complete_Identify, send_buffer);
         users_mutex_.unlock();
 
@@ -179,7 +179,7 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     send_buffer.WriteUInt16(kUserMessageResult_Ok);
 	send_buffer.WriteString(chat_user->Username);
 	send_buffer.WriteString(chat_user->Hostname);
-    server_->SendUnicast(client, kComponentType_User,
+    server_->Send(client, kComponentType_User,
       kUserMessageType_Complete_Identify, send_buffer);
 
     // Trigger events

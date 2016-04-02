@@ -81,7 +81,7 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kSystemMessageResult_Ok);
-    server_->SendUnicast(client, kComponentType_System,
+    server_->Send(client, kComponentType_System,
       kSystemMessageType_Complete_Hello, send_buffer);
 
 	return true;

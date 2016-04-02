@@ -35,12 +35,10 @@ class ChatServer {
   bool getTcpClient(RemoteChatClient &client, TcpClient **out_client);
 
   // Send functions
-  bool sendUnicast(TcpClient &client, ComponentType component_type,
+  bool send(TcpClient &client, ComponentType component_type,
     uint8_t message_type, TypedBuffer &buffer);
-  bool sendUnicast(TcpClient *client, ComponentType component_type,
+  bool send(TcpClient *client, ComponentType component_type,
     uint8_t message_type, TypedBuffer &buffer);
-  bool sendMulticast(std::vector<TcpClient *> clients,
-    ComponentType component_type, uint8_t message_type, TypedBuffer &buffer);
 
 public:
   ChatServer(const char *hostname, uint16_t port);
@@ -62,12 +60,10 @@ public:
   }
 
   TypedBuffer CreateBuffer();
-  bool SendUnicast(RemoteChatClient &client, ComponentType component_type,
+  bool Send(RemoteChatClient &client, ComponentType component_type,
     uint8_t message_type, TypedBuffer &buffer);
-  bool SendUnicast(RemoteChatClient *client, ComponentType component_type,
+  bool Send(RemoteChatClient *client, ComponentType component_type,
     uint8_t message_type, TypedBuffer &buffer);
-  bool SendMulticast(std::vector<RemoteChatClient *> clients,
-    ComponentType component_type, uint8_t message_type, TypedBuffer &buffer);
 
   IPEndpoint GetListenEndpoint();
 

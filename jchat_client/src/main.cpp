@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
           " ");
         // TODO: Implement
       } else if (command == "quit" && arguments.size() == 0) {
-        // TODO: Implement
+		exit(0);
       } else {
         std::cout << "Invalid command" << std::endl;
         continue;

@@ -134,37 +134,22 @@ TypedBuffer ChatServer::CreateBuffer() {
     return TypedBuffer(!is_little_endian_);
 }
 
-bool ChatServer::SendUnicast(RemoteChatClient &client,
+bool ChatServer::Send(RemoteChatClient &client,
   ComponentType component_type, uint8_t message_type, TypedBuffer &buffer) {
   TcpClient *tcp_client = NULL;
   if (!getTcpClient(client, &tcp_client)) {
     return false;
   }
-  return sendUnicast(*tcp_client, component_type, message_type, buffer);
+  return send(*tcp_client, component_type, message_type, buffer);
 }
 
-bool ChatServer::SendUnicast(RemoteChatClient *client,
+bool ChatServer::Send(RemoteChatClient *client,
   ComponentType component_type, uint8_t message_type, TypedBuffer &buffer) {
   TcpClient *tcp_client = NULL;
   if (!getTcpClient(*client, &tcp_client)) {
     return false;
   }
-  return sendUnicast(*tcp_client, component_type, message_type, buffer);
-}
-
-bool ChatServer::SendMulticast(std::vector<RemoteChatClient *> clients,
-  ComponentType component_type, uint8_t message_type, TypedBuffer &buffer) {
-  bool success = true;
-  for (auto client : clients) {
-    TcpClient *tcp_client = NULL;
-    if (!getTcpClient(*client, &tcp_client)) {
-      return false;
-    }
-    if (!sendUnicast(*tcp_client, component_type, message_type, buffer)) {
-      success = false;
-    }
-  }
-  return success;
+  return send(*tcp_client, component_type, message_type, buffer);
 }
 
 IPEndpoint ChatServer::GetListenEndpoint() {
@@ -281,7 +266,7 @@ bool ChatServer::getTcpClient(RemoteChatClient &client,
   return false;
 }
 
-bool ChatServer::sendUnicast(TcpClient &client, ComponentType component_type,
+bool ChatServer::send(TcpClient &client, ComponentType component_type,
   uint8_t message_type, TypedBuffer &buffer) {
   Buffer temp_buffer(!is_little_endian_);
 
@@ -296,19 +281,8 @@ bool ChatServer::sendUnicast(TcpClient &client, ComponentType component_type,
   return tcp_server_.Send(client, temp_buffer);
 }
 
-bool ChatServer::sendUnicast(TcpClient *client, ComponentType component_type,
+bool ChatServer::send(TcpClient *client, ComponentType component_type,
   uint8_t message_type, TypedBuffer &buffer) {
-  return sendUnicast(*client, component_type, message_type, buffer);
-}
-
-bool ChatServer::sendMulticast(std::vector<TcpClient *> clients,
-  ComponentType component_type, uint8_t message_type, TypedBuffer &buffer) {
-  bool success = true;
-  for (auto client : clients) {
-    if (!sendUnicast(client, component_type, message_type, buffer)) {
-      success = false;
-    }
-  }
-  return success;
+  return send(*client, component_type, message_type, buffer);
 }
 }

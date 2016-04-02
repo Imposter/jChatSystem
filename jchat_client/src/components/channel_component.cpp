@@ -202,7 +202,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // Remove the ChatChannel and do necessary actions
     channels_mutex_.lock();
-    for (auto it = channels_.begin(); it != channels_.end(); ++it) {
+	for (auto it = channels_.begin(); it != channels_.end(); ++it) {
       std::shared_ptr<ChatChannel> &chat_channel = *it;
       if (chat_channel->Enabled && chat_channel->Name == channel_name) {
         OnChannelLeft(*chat_channel, *chat_user);
@@ -224,8 +224,9 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
         chat_channel->BannedUsersMutex.unlock();
 
         // Remove the channel
-        it = channels_.erase(it);
-      }
+        channels_.erase(it);
+		break;
+	  }
     }
     channels_mutex_.unlock();
 
