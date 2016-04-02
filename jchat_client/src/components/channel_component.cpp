@@ -283,7 +283,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-    
+
     std::string channel_name;
     if (!buffer.ReadString(channel_name)) {
       return false;
@@ -320,7 +320,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
         // Remove from operators
         chat_channel->OperatorsMutex.lock();
         for (auto it = chat_channel->Operators.begin();
-          it != chat_channel->Operators.end();) {
+          it != chat_channel->Operators.end(); ++it) {
           std::shared_ptr<ChatUser> &user = *it;
           if (user->Username == username && user->Hostname == hostname) {
             chat_channel->Operators.erase(it);
