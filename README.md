@@ -10,20 +10,15 @@ NOTE: Make sure you have git, g++, and make installed on your system.
 2. Set up the project using `premake5_* [gmake|vs2013|vs2015]`. Depending on your platform you can use `premake5_linux`, `premake_osx`, `premake_windows`
 3. Once you've created the project, you can either open `jchat.sln` or build using:
   * Configurations:
-    * linux32_debug
-    * linux64_debug
-    * osx32_debug
-    * osx64_debug
-    * win32_debug
-    * win64_debug
-    * linux32_release
-    * linux64_release
-    * osx32_release
-    * osx64_release
-    * win32_release
-    * win64_release
-  1. `make -f jchat_server.make config=linux32_debug`
-  2. `make -f jchat_client.make config=linux32_debug`
+    * debug_win32
+    * debug_win64
+    * debug_unix32
+    * debug_unix32
+    * release_win32
+    * release_win64
+    * release_unix32
+    * release_unix32
+  * `make config=debug_unix32 all`
 4. You can launch the program in the corresponding platform and configuration in the `build/` directory
 
 ## Contributing
