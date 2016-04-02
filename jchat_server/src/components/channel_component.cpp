@@ -267,7 +267,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     chat_channel->OperatorsMutex.lock();
     chat_channel->ClientsMutex.lock();
-    client_buffer.WriteUInt64(chat_channel->Clients.size() - 1);
+    size_t client_count = 0;
+    for (auto &pair : chat_channel->Clients) {
+      if (pair.first != &client && pair.second->Enabled) {
+        client_count++;
+      }
+    }
+    client_buffer.WriteUInt64(client_count);
     for (auto &pair : chat_channel->Clients) {
       if (pair.first != &client && pair.second->Enabled) {
         client_buffer.WriteString(pair.second->Username);
@@ -299,7 +305,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     chat_channel->ClientsMutex.lock();
     for (auto &pair : chat_channel->Clients) {
-      if (pair.second->Enabled) {
+      if (pair.first != &client && pair.second->Enabled) {
         server_->Send(pair.first, kComponentType_Channel,
           kChannelMessageType_JoinChannel, clients_buffer);
       }
