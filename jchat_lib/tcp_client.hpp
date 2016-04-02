@@ -73,7 +73,7 @@ class TcpClient {
   std::vector<uint8_t> read_buffer_;
 
 #if defined(OS_WIN)
-	WSADATA wsa_data_;
+  WSADATA wsa_data_;
 #endif
 
   void worker_loop() {
@@ -85,7 +85,7 @@ class TcpClient {
       // Add the client to the set
       FD_SET(client_socket_, &socket_set);
 
-      // Check if an activity was completed on any of those sockets
+      // Check if an activity was completed on the client socket
       int32_t socket_activity = select(client_socket_ + 1, &socket_set, NULL,
         NULL, NULL);
 
@@ -127,8 +127,8 @@ public:
     read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
 #if defined(OS_WIN)
-		// Initialize Winsock
-		WSAStartup(MAKEWORD(2, 2), &wsa_data_);
+	// Initialize Winsock
+	WSAStartup(MAKEWORD(2, 2), &wsa_data_);
 #endif
 
     // Get remote address info
@@ -169,7 +169,11 @@ public:
 	  fcntl(client_socket, F_SETFL, flags);
 	}
 #elif defined(OS_WIN)
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+	unsigned int blocking = 1;
+#else
 	u_long blocking = 1;
+#endif
 	ioctlsocket(client_socket, FIONBIO, &blocking);
 #endif
   }
@@ -182,8 +186,8 @@ public:
       }
       closesocket(client_socket_);
 #if defined(OS_WIN)
-			// Cleanup Winsock
-			WSACleanup();
+	  // Cleanup Winsock
+	  WSACleanup();
 #endif
     }
   }
@@ -215,25 +219,29 @@ public:
     client_endpoint_.SetSocketEndpoint(client_endpoint);
 
 #if defined(OS_LINUX)
-		uint32_t flags = fcntl(client_socket_, F_GETFL, 0);
-		if (flags != SOCKET_ERROR) {
-			flags |= O_NONBLOCK;
-			if (fcntl(client_socket_, F_SETFL, flags) == SOCKET_ERROR) {
-				closesocket(client_socket_);
-				return false;
-			}
-		} else {
+	uint32_t flags = fcntl(client_socket_, F_GETFL, 0);
+	if (flags != SOCKET_ERROR) {
+	  flags |= O_NONBLOCK;
+		if (fcntl(client_socket_, F_SETFL, flags) == SOCKET_ERROR) {
+		  closesocket(client_socket_);
+		  return false;
+		}
+	} else {
 #elif defined(OS_WIN)
-		u_long blocking = 1;
-		if (ioctlsocket(client_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+	  unsigned int blocking = 1;
+#else
+	  u_long blocking = 1;
+#endif
+	  if (ioctlsocket(client_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
 #endif
       closesocket(client_socket_);
       return false;
     }
 
+	is_connected_ = true;
     worker_thread_ = std::thread(&TcpClient::worker_loop, this);
 
-    is_connected_ = true;
     OnConnected();
 
     return true;

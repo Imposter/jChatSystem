@@ -28,7 +28,7 @@ class TcpServer {
   std::thread worker_thread_;
 
 #if defined(OS_WIN)
-	WSADATA wsa_data_;
+  WSADATA wsa_data_;
 #endif
 
   void worker_loop() {
@@ -125,8 +125,8 @@ public:
     : hostname_(hostname), port_(port), is_listening_(false),
     listen_socket_(0), listen_endpoint_("0.0.0.0", port) {
 #if defined(OS_WIN)
-		// Initialize Winsock
-		WSAStartup(MAKEWORD(2, 2), &wsa_data_);
+	// Initialize Winsock
+	WSAStartup(MAKEWORD(2, 2), &wsa_data_);
 #endif
 
     // Get remote address info
@@ -160,8 +160,8 @@ public:
       closesocket(listen_socket_);
 
 #if defined(OS_WIN)
-			// Cleanup Winsock
-			WSACleanup();
+	  // Cleanup Winsock
+	  WSACleanup();
 #endif
     }
 
@@ -174,38 +174,42 @@ public:
   }
 
   bool Start() {
-    if (is_listening_) {
-      return false;
-    }
+	  if (is_listening_) {
+		  return false;
+	  }
 
-    if ((listen_socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))
-      == SOCKET_ERROR) {
-      return false;
-    }
+	  if ((listen_socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))
+		  == SOCKET_ERROR) {
+		  return false;
+	  }
 
-    sockaddr_in listen_endpoint = listen_endpoint_.GetSocketEndpoint();
-    if (bind(listen_socket_, (const sockaddr *)&listen_endpoint,
-      sizeof(listen_endpoint)) == SOCKET_ERROR) {
-      closesocket(listen_socket_);
-      return false;
-    }
+	  sockaddr_in listen_endpoint = listen_endpoint_.GetSocketEndpoint();
+	  if (bind(listen_socket_, (const sockaddr *)&listen_endpoint,
+		  sizeof(listen_endpoint)) == SOCKET_ERROR) {
+		  closesocket(listen_socket_);
+		  return false;
+	  }
 
-    if (listen(listen_socket_, JCHAT_TCP_SERVER_BACKLOG) == SOCKET_ERROR) {
-      closesocket(listen_socket_);
-      return false;
-    }
+	  if (listen(listen_socket_, JCHAT_TCP_SERVER_BACKLOG) == SOCKET_ERROR) {
+		  closesocket(listen_socket_);
+		  return false;
+	  }
 
 #if defined(OS_LINUX)
-		uint32_t flags = fcntl(listen_socket_, F_GETFL, 0);
-		if (flags != SOCKET_ERROR) {
-			flags |= O_NONBLOCK;
-			if (fcntl(listen_socket_, F_SETFL, flags) == SOCKET_ERROR) {
-				closesocket(listen_socket_);
-				return false;
-			}
-		} else {
+	  uint32_t flags = fcntl(listen_socket_, F_GETFL, 0);
+	  if (flags != SOCKET_ERROR) {
+		  flags |= O_NONBLOCK;
+		  if (fcntl(listen_socket_, F_SETFL, flags) == SOCKET_ERROR) {
+			  closesocket(listen_socket_);
+			  return false;
+		  }
+	  } else {
 #elif defined(OS_WIN)
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+	    unsigned int blocking = 1;
+#else
 		u_long blocking = 1;
+#endif
 		if (ioctlsocket(listen_socket_, FIONBIO, &blocking) == SOCKET_ERROR) {
 #endif
       closesocket(listen_socket_);
