@@ -180,7 +180,8 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     if (!chat_channel) {
       // Create the channel and add the user to it
-      auto chat_channel = std::make_shared<ChatChannel>();
+      chat_channel = std::make_shared<ChatChannel>();
+	  chat_channel->Enabled = true;
       chat_channel->Name = channel_name;
       chat_channel->Operators[&client] = chat_user;
       chat_channel->Clients[&client] = chat_user;
