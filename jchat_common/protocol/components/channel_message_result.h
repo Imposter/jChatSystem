@@ -20,7 +20,9 @@ enum ChannelMessageResult : uint16_t {
 
   kChannelMessageResult_NotIdentified,
   kChannelMessageResult_InvalidChannelName,
+  kChannelMessageResult_InvalidUsername,
   kChannelMessageResult_NotInChannel,
+  kChannelMessageResult_NotPermitted,
 
   // JoinChannel
   kChannelMessageResult_ChannelCreated,
@@ -32,11 +34,24 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_ChannelDestroyed,
   kChannelMessageResult_UserLeft,
 
-
   // SendMessage
   kChannelMessageResult_InvalidMessage,
   kChannelMessageResult_MessageSent,
 
+  // OpUser
+  kChannelMessageResult_UserOpped,
+
+  // DeopUser
+  kChannelMessageResult_UserDeopped,
+
+  // KickUser
+  kChannelMessageResult_UserKicked,
+
+  // BanUser
+  kChannelMessageResult_UserBanned,
+
+  // UnbanUser
+  kChannelMessageResult_UserUnbanned,
 
   kChannelMessageResult_Max
 };

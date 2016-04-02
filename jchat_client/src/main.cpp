@@ -118,17 +118,17 @@ int main(int argc, char **argv) {
     jchat::ChannelMessageResult result, std::string &channel_name,
     std::string &message) {
     if (result == jchat::kChannelMessageResult_InvalidMessage) {
-      std::cout << "Channel: Invalid message! (" << channel_name
-        << ", \"" << message << "\")" << std::endl;
+      std::cout << "Channel: Invalid message! (" << channel_name << ", \""
+      << message << "\")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
-        << ", \"" << message << "\")" << std::endl;
+      std::cout << "Channel: Not in channel! (" << channel_name << ", \""
+      << message << "\")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
-        << ", \"" << message << "\")" << std::endl;
+      std::cout << "Channel: Not identified! (" << channel_name << ", \""
+      << message << "\")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
-        << ", \"" << message << "\")" << std::endl;
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ", \""
+      << message << "\")" << std::endl;
     }
     return true;
   });
