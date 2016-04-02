@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     return true;
   });
   user_component->OnIdentified.Add([](jchat::UserMessageResult result,
-	  std::string username) {
+	  std::string &username) {
     if (result == jchat::kUserMessageResult_Ok) {
       std::cout << "User: Successfully identified! (" << username << ")"
         << std::endl;
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
     return true;
   });
   channel_component->OnJoinCompleted.Add([](jchat::ChannelMessageResult result,
-    std::string channel_name) {
+    std::string &channel_name) {
     if (result == jchat::kChannelMessageResult_Ok) {
       std::cout << "Channel: Successfully joined channel! (" << channel_name
         << ")" << std::endl;
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
     return true;
   });
   channel_component->OnLeaveCompleted.Add([](jchat::ChannelMessageResult result,
-    std::string channel_name) {
+    std::string &channel_name) {
     if (result == jchat::kChannelMessageResult_Ok) {
       std::cout << "Channel: Successfully left channel! (" << channel_name
         << ")" << std::endl;
@@ -111,6 +111,24 @@ int main(int argc, char **argv) {
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
       std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
         << std::endl;
+    }
+    return true;
+  });
+  channel_component->OnSendMessageCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &message) {
+    if (result == jchat::kChannelMessageResult_InvalidMessage) {
+      std::cout << "Channel: Invalid message! (" << channel_name
+        << ", \"" << message << "\")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", \"" << message << "\")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", \"" << message << "\")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", \"" << message << "\")" << std::endl;
     }
     return true;
   });
@@ -138,6 +156,20 @@ int main(int argc, char **argv) {
     if (&user != local_user.get()) {
       std::cout << "Channel: " << user.Username << " left " << channel.Name
         << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelMessage.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user, std::string &message) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " => " << channel.Name
+        << ": " << message << std::endl;
     }
 
     return true;
@@ -195,7 +227,11 @@ int main(int argc, char **argv) {
         std::string message = jchat::String::Join(
           std::vector<std::string>(arguments.begin() + 1, arguments.end()),
           " ");
-        // TODO: Implement
+        if (!target.empty() && target[0] == '#') {
+          channel_component->SendMessage(target, message);
+        } else {
+          // TODO: Implement client direct messaging
+        }
       } else if (command == "quit" && arguments.size() == 0) {
         exit(0);
       } else {

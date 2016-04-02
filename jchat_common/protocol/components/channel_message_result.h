@@ -34,6 +34,8 @@ enum ChannelMessageResult : uint16_t {
 
 
   // SendMessage
+  kChannelMessageResult_InvalidMessage,
+  kChannelMessageResult_MessageSent,
 
 
   kChannelMessageResult_Max

@@ -47,10 +47,27 @@ public:
   // API events
   Event<ChannelMessageResult, std::string &, ChatUser &> OnJoinCompleted;
   Event<ChannelMessageResult, std::string &, ChatUser &> OnLeaveCompleted;
+  Event<ChannelMessageResult, std::string &, std::string &,
+    ChatUser &> OnSendMessageCompleted;
+  Event<ChannelMessageResult, std::string &, std::string &,
+    ChatUser &> OnOpUserCompleted;
+  Event<ChannelMessageResult, std::string &, std::string &,
+    ChatUser &> OnDeopUserCompleted;
+  Event<ChannelMessageResult, std::string &, std::string &,
+    ChatUser &> OnKickUserCompleted;
+  Event<ChannelMessageResult, std::string &, std::string &,
+    ChatUser &> OnBanUserCompleted;
 
   Event<ChatChannel &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;
   Event<ChatChannel &, ChatUser &> OnChannelLeft;
+
+  Event<ChatChannel &, ChatUser &, std::string &> OnChannelMessage;
+  Event<ChatChannel &, ChatUser &> OnChannelUserOpped;
+  Event<ChatChannel &, ChatUser &> OnChannelUserDeopped;
+  Event<ChatChannel &, ChatUser &> OnChannelUserKicked;
+  Event<ChatChannel &, ChatUser &> OnChannelUserBanned;
+  Event<ChatChannel &, ChatUser &> OnChannelUserUnbanned;
 };
 }
 

@@ -161,12 +161,6 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     }
     chat_channel->BannedUsersMutex.unlock();
 
-    // TODO: Handle notifications that a user has joined/left a channel
-    // TODO: Handle SendMessage
-    // TODO: Handle KickUser
-    // TODO: Handle BanUser
-    // TODO: Add SendMessage to UserComponent
-
     // Trigger events
     OnChannelJoined(*chat_channel, *chat_user);
 
@@ -180,7 +174,8 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadString(channel_name)) {
       return false;
     }
-    OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result), channel_name);
+    OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result),
+      channel_name);
     if (message_result != kChannelMessageResult_Ok
       && message_result != kChannelMessageResult_ChannelDestroyed) {
       return true;
@@ -225,6 +220,47 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
         // Remove the channel
         channels_.erase(it);
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    return true;
+  } else if (message_type == kChannelMessageType_SendMessage_Complete) {
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+    std::string message;
+    if (!buffer.ReadString(message)) {
+      return false;
+    }
+    OnSendMessageCompleted(static_cast<ChannelMessageResult>(message_result),
+      channel_name, message);
+
+    // Get user component
+    std::shared_ptr<UserComponent> user_component;
+    if (!client_->GetComponent(kComponentType_User, user_component)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    channels_mutex_.lock();
+    for (auto it = channels_.begin(); it != channels_.end(); ++it) {
+      std::shared_ptr<ChatChannel> &chat_channel = *it;
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        OnChannelMessage(*chat_channel, *chat_user, message);
         break;
       }
     }
@@ -335,6 +371,55 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     channels_mutex_.unlock();
 
     return true;
+  } else if (message_type == kChannelMessageType_SendMessage) {
+    // Read buffer
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    std::string message;
+    if (!buffer.ReadString(message)) {
+      return false;
+    }
+
+    // Find the channel
+    channels_mutex_.lock();
+    for (auto &chat_channel : channels_) {
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        // Find the user
+        chat_channel->ClientsMutex.lock();
+        for (auto it = chat_channel->Clients.begin();
+          it != chat_channel->Clients.end(); ++it) {
+          std::shared_ptr<ChatUser> &user = *it;
+          if (user->Username == username && user->Hostname == hostname) {
+            // Trigger events
+            OnChannelMessage(*chat_channel, *user, message);
+            break;
+          }
+        }
+        chat_channel->ClientsMutex.unlock();
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    return true;
   }
 
   return false;
@@ -351,6 +436,59 @@ bool ChannelComponent::LeaveChannel(std::string channel_name) {
   TypedBuffer buffer = client_->CreateBuffer();
   buffer.WriteString(channel_name);
   return client_->Send(kComponentType_Channel, kChannelMessageType_LeaveChannel,
+    buffer);
+}
+
+bool ChannelComponent::SendMessage(std::string channel_name,
+  std::string message) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(message);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_SendMessage,
+    buffer);
+}
+
+bool ChannelComponent::OpUser(std::string channel_name, std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_OpUser,
+    buffer);
+}
+
+bool ChannelComponent::DeopUser(std::string channel_name,
+  std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_DeopUser,
+    buffer);
+}
+
+bool ChannelComponent::KickUser(std::string channel_name,
+  std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_KickUser,
+    buffer);
+}
+
+bool ChannelComponent::BanUser(std::string channel_name,
+  std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_BanUser,
+    buffer);
+}
+
+bool ChannelComponent::UnbanUser(std::string channel_name,
+  std::string username) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(channel_name);
+  buffer.WriteString(username);
+  return client_->Send(kComponentType_Channel, kChannelMessageType_UnbanUser,
     buffer);
 }
 }
