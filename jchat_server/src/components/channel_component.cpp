@@ -153,7 +153,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
 
     // Check if the channel name is valid
-    if (channel_name.empty() || channel_name[0] == '#') {
+    if (channel_name.empty() || channel_name[0] != '#') {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
       send_buffer.WriteString(channel_name);
@@ -340,7 +340,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
 
     // Check if the channel name is valid
-    if (channel_name.empty() || channel_name[0] == '#') {
+    if (channel_name.empty() || channel_name[0] != '#') {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
       send_buffer.WriteString(channel_name);
