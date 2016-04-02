@@ -141,6 +141,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
@@ -154,6 +155,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!String::Contains(channel_name, "#")) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
@@ -190,6 +192,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // the operator operator and member of it
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_ChannelCreated);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
@@ -209,6 +212,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_AlreadyInChannel);
+	  send_buffer.WriteString(chat_channel->Name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_JoinChannel_Complete, send_buffer);
 
@@ -228,6 +232,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     client_buffer.WriteUInt16(kChannelMessageResult_Ok); // Channel joined
 
     chat_channel->OperatorsMutex.lock();
+	client_buffer.WriteString(chat_channel->Name);
     client_buffer.WriteUInt32(chat_channel->Operators.size());
     for (auto &pair : chat_channel->Operators) {
       if (pair.second->Enabled) {
@@ -252,6 +257,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // Notify all clients in the channel that the user has joined
     TypedBuffer clients_buffer = server_->CreateBuffer();
     clients_buffer.WriteUInt16(kChannelMessageResult_UserJoined);
+	clients_buffer.WriteString(chat_channel->Name);
     clients_buffer.WriteString(chat_user->Username);
     clients_buffer.WriteString(chat_user->Hostname);
 
@@ -293,6 +299,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_user->Identified) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
@@ -306,6 +313,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!String::Contains(channel_name, "#")) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
@@ -329,6 +337,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_channel) {
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+	  send_buffer.WriteString(channel_name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
@@ -344,6 +353,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // Notify all clients in that channel that the client left
       TypedBuffer clients_buffer = server_->CreateBuffer();
       clients_buffer.WriteUInt16(kChannelMessageResult_UserLeft);
+	  clients_buffer.WriteString(chat_channel->Name);
       clients_buffer.WriteString(chat_user->Username);
       clients_buffer.WriteString(chat_user->Hostname);
 
@@ -371,6 +381,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       // Notify the client that they are not in the channel
       TypedBuffer send_buffer = server_->CreateBuffer();
       send_buffer.WriteUInt16(kChannelMessageResult_NotInChannel);
+	  send_buffer.WriteString(chat_channel->Name);
       server_->SendUnicast(client, kComponentType_Channel,
         kChannelMessageType_LeaveChannel_Complete, send_buffer);
 
@@ -391,7 +402,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // Notify the client that they left the channel
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kChannelMessageResult_Ok);
-    send_buffer.WriteString(channel_name);
+	send_buffer.WriteString(chat_channel->Name);
     server_->SendUnicast(client, kComponentType_Channel,
       kChannelMessageType_LeaveChannel_Complete, send_buffer);
 

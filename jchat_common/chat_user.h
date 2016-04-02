@@ -14,11 +14,7 @@
 #endif // JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH
 
 namespace jchat {
-// TODO/NOTE: This is subject to change
 struct ChatUser {
-  // NOTE: This should be used when sending a message to the client to see if
-  // it is enabled, when the client connects, this should be set to true, and
-  // false when the client disconnects
   bool Enabled;
   std::string Username;
   std::string Hostname;
