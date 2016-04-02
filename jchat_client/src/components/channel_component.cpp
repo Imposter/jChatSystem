@@ -75,6 +75,12 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
+
+    // Add the channel to the channel list
+    channels_mutex_.lock();
+    channels_.push_back(chat_channel);
+    channels_mutex_.unlock();
+
     if (!buffer.ReadString(chat_channel->Name)) {
       return false;
     }
@@ -94,10 +100,14 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     }
 
     // Add the local user
+    chat_channel->ClientsMutex.lock();
     chat_channel->Clients.push_back(chat_user);
+    chat_channel->ClientsMutex.unlock();
 
     if (message_result == kChannelMessageResult_ChannelCreated) {
+      chat_channel->OperatorsMutex.lock();
       chat_channel->Operators.push_back(chat_user);
+      chat_channel->OperatorsMutex.unlock();
 
       return true;
     }
@@ -123,18 +133,23 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
         return false;
       }
 
+      chat_channel->ClientsMutex.lock();
       chat_channel->Clients.push_back(user);
+      chat_channel->ClientsMutex.unlock();
       if (is_operator) {
+        chat_channel->OperatorsMutex.lock();
         chat_channel->Operators.push_back(user);
+        chat_channel->OperatorsMutex.unlock();
       }
     }
 
     // TODO: Read bans
+    uint64_t bans_count = 0;
+    if (!buffer.ReadUInt64(bans_count)) {
+      return false;
+    }
 
-    // Add the channel to the channel list
-    channels_mutex_.lock();
-    channels_.push_back(chat_channel);
-    channels_mutex_.unlock();
+
 
     // TODO: Handle notifications that a user has joined/left a channel
     // TODO: Handle SendMessage

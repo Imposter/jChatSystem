@@ -4,20 +4,18 @@ jChatSystem is a TCP network based chat system, using clients and a server. It i
 
 ## Installation/Usage
 
-NOTE: Make sure you have git, g++, and make installed on your system.
-
 1. Download, or clone repository using `git clone https://github.com/Imposter/jChatSystem.git`
 2. Set up the project using `premake5_* [gmake|vs2013|vs2015]`. Depending on your platform you can use `premake5_linux`, `premake_osx`, `premake_windows`
 3. Once you've created the project, you can either open `jchat.sln` or build using:
   * Configurations:
-    * debug_win32
+    * debug_win32 (`GNU compilers may not work`)
     * debug_win64
-    * debug_unix32
-    * debug_unix32
-    * release_win32
+    * debug_unix32 (`GNU compilers may not work`)
+    * debug_unix64
+    * release_win32 (`GNU compilers may not work`)
     * release_win64
-    * release_unix32
-    * release_unix32
+    * release_unix32 (`GNU compilers may not work`)
+    * release_unix64
   * `make config=debug_unix32 all`
 4. You can launch the program in the corresponding platform and configuration in the `build/` directory
 
