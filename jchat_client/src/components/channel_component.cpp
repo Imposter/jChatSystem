@@ -306,7 +306,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
         // Remove from clients
         chat_channel->ClientsMutex.lock();
         for (auto it = chat_channel->Clients.begin();
-          it != chat_channel->Clients.end();) {
+          it != chat_channel->Clients.end(); ++it) {
           std::shared_ptr<ChatUser> &user = *it;
           if (user->Username == username && user->Hostname == hostname) {
             // Trigger events
