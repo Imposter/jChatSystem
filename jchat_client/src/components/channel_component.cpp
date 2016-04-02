@@ -267,6 +267,26 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     channels_mutex_.unlock();
 
     return true;
+  } else if (message_type == kChannelMessageType_OpUser_Complete) {
+    // TODO: Implement
+
+    return true;
+  } else if (message_type == kChannelMessageType_DeopUser_Complete) {
+    // TODO: Implement
+
+    return true;
+  } else if (message_type == kChannelMessageType_KickUser_Complete) {
+    // TODO: Implement
+
+    return true;
+  } else if (message_type == kChannelMessageType_BanUser_Complete) {
+    // TODO: Implement
+
+    return true;
+  } else if (message_type == kChannelMessageType_UnbanUser_Complete) {
+    // TODO: Implement
+
+    return true;
   } else if (message_type == kChannelMessageType_JoinChannel) {
     // Read buffer
     uint16_t message_result = 0;
@@ -423,15 +443,15 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
   } else if (message_type == kChannelMessageType_OpUser) {
     // TODO: Implement
 
-    return false;
+    return true;
   } else if (message_type == kChannelMessageType_DeopUser) {
     // TODO: Implement
 
-    return false;
+    return true;
   } else if (message_type == kChannelMessageType_KickUser) {
     // TODO: Implement
 
-    return false;
+    return true;
   } else if (message_type == kChannelMessageType_BanUser) {
     // TODO: Implement
 
@@ -439,7 +459,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
   } else if (message_type == kChannelMessageType_UnbanUser) {
     // TODO: Implement
 
-    return false;
+    return true;
   }
 
   return false;
