@@ -64,13 +64,13 @@ void ChannelComponent::OnClientDisconnected(RemoteChatClient &client) {
   // disconnected
   channels_mutex_.lock();
   for (auto it = channels_.begin(); it != channels_.end(); ++it) {
-    std::shared_ptr<ChatChannel> channel = *it;
+    std::shared_ptr<ChatChannel> &channel = *it;
 
     if (channel->Enabled) {
       channel->ClientsMutex.lock();
       if (channel->Clients.find(&client) != channel->Clients.end()) {
         // Get the chat user
-        std::shared_ptr<ChatUser> chat_user = channel->Clients[&client];
+        std::shared_ptr<ChatUser> &chat_user = channel->Clients[&client];
 
         // Notify all clients in that channel that the client left
         TypedBuffer clients_buffer = server_->CreateBuffer();
