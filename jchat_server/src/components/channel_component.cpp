@@ -263,6 +263,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // current clients
     TypedBuffer client_buffer = server_->CreateBuffer();
     client_buffer.WriteUInt16(kChannelMessageResult_Ok); // Channel joined
+    client_buffer.WriteString(chat_channel->Name);
 
     chat_channel->OperatorsMutex.lock();
     chat_channel->ClientsMutex.lock();
