@@ -233,6 +233,11 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     return true;
   } else if (message_type == kChannelMessageType_JoinChannel) {
     // Read buffer
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+
     std::string channel_name;
     if (!buffer.ReadString(channel_name)) {
       return false;
@@ -274,6 +279,11 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     return true;
   } else if (message_type == kChannelMessageType_LeaveChannel) {
     // Read buffer
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    
     std::string channel_name;
     if (!buffer.ReadString(channel_name)) {
       return false;
