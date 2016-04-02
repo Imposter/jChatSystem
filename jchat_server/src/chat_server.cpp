@@ -267,7 +267,8 @@ bool ChatServer::onDataReceived(TcpClient &tcp_client, Buffer &buffer) {
   return handled;
 }
 
-bool ChatServer::getTcpClient(RemoteChatClient &client, TcpClient **out_client) {
+bool ChatServer::getTcpClient(RemoteChatClient &client,
+  TcpClient **out_client) {
   clients_mutex_.lock();
   for (auto pair : clients_) {
     if (pair.second == &client) {
