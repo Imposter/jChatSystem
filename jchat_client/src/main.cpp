@@ -7,6 +7,7 @@
 */
 
 // Required libraries
+#include "command_line.hpp"
 #include "chat_client.h"
 #include "components/system_component.h"
 #include "components/user_component.h"
@@ -20,8 +21,16 @@
 int main(int argc, char **argv) {
   std::cout << "jChatSystem - Client" << std::endl;
 
+  jchat::CommandLine command_line(argc, argv);
+  if (argc > 1) {
+	  std::cout << "Starting with arguments..." << std::endl;
+	  std::cout << command_line << std::endl;
+  }
+
   // Create the chat client
-  jchat::ChatClient chat_client("127.0.0.1", 9998);
+  jchat::ChatClient chat_client(
+    command_line.GetString("ipaddress", "127.0.0.1").c_str(),
+    command_line.GetInt32("port", 9998));
 
   // Handle client events
   chat_client.OnDisconnected.Add([]() {
@@ -104,11 +113,16 @@ int main(int argc, char **argv) {
       } else if (command == "join" && arguments.size() == 1) {
         std::string &target = arguments[0];
         // TODO: Implement
+      } else if (command == "leave" && arguments.size() == 1) {
+        std::string &target = arguments[0];
+        // TODO: Implement
       } else if (command == "msg" && arguments.size() >= 2) {
         std::string &target = arguments[0];
         std::string message = jchat::String::Join(
           std::vector<std::string>(arguments.begin() + 1, arguments.end()),
           " ");
+        // TODO: Implement
+      } else if (command == "quit" && arguments.size() == 0) {
         // TODO: Implement
       } else {
         std::cout << "Invalid command" << std::endl;
