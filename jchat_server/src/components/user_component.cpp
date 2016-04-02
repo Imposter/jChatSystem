@@ -83,7 +83,8 @@ void UserComponent::OnClientDisconnected(RemoteChatClient &client) {
 
   std::shared_ptr<ChatUser> &user = users_[&client];
 
-  // TODO: Do anything with the user that we need to
+  // Set as disabled
+  user->Enabled = false;
 
   // Delete user
   users_.erase(&client);
@@ -148,7 +149,8 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // Check if the username is in use
     users_mutex_.lock();
     for (auto &pair : users_) {
-      if (pair.second->Identified && pair.second->Username == username) {
+      if (pair.second->Enabled && pair.second->Identified 
+		&& pair.second->Username == username) {
         TypedBuffer send_buffer = server_->CreateBuffer();
         send_buffer.WriteUInt16(kUserMessageResult_UsernameInUse);
         server_->SendUnicast(client, kComponentType_User,

@@ -110,6 +110,7 @@ bool ChatServer::RemoveComponent(ChatComponent *component) {
   for (auto it = components_.begin(); it != components_.end(); ++it) {
     if (*it == component) {
       if (!component->Shutdown()) {
+		components_mutex_.unlock();
         return false;
       }
       components_.erase(it);
