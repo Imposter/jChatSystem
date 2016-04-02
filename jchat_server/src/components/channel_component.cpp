@@ -102,7 +102,7 @@ void ChannelComponent::OnClientDisconnected(RemoteChatClient &client) {
 
       // Remove the client from the operators list if they're an operator
       channel->OperatorsMutex.lock();
-      if (channel->Operators.find(&client) != channel->Clients.end()) {
+      if (channel->Operators.find(&client) != channel->Operators.end()) {
         channel->Operators.erase(&client);
       }
       channel->OperatorsMutex.unlock();
