@@ -45,7 +45,7 @@ public:
   Event<ChannelMessageResult, std::string &> OnJoinCompleted;
   Event<ChannelMessageResult, std::string &> OnLeaveCompleted;
 
-  Event<ChatChannel &> OnChannelCreated;
+  Event<ChatChannel &, ChatUser &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;
   Event<ChatChannel &, ChatUser &> OnChannelLeft;
 };

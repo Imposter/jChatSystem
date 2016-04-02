@@ -109,6 +109,9 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       chat_channel->Operators.push_back(chat_user);
       chat_channel->OperatorsMutex.unlock();
 
+      OnChannelCreated(*chat_channel, *chat_user);
+      OnChannelJoined(*chat_channel, *chat_user);
+
       return true;
     }
 
@@ -143,13 +146,22 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       }
     }
 
-    // TODO: Read bans
+    // Read bans
     uint64_t bans_count = 0;
     if (!buffer.ReadUInt64(bans_count)) {
       return false;
     }
 
-
+    chat_channel->BannedUsersMutex.lock();
+    for (size_t i = 0; i < bans_count; i++) {
+      std::string banned_user;
+      if (!buffer.ReadString(banned_user)) {
+        chat_channel->BannedUsersMutex.unlock();
+        return false;
+      }
+      chat_channel->BannedUsers.push_back(banned_user);
+    }
+    chat_channel->BannedUsersMutex.unlock();
 
     // TODO: Handle notifications that a user has joined/left a channel
     // TODO: Handle SendMessage
@@ -157,9 +169,8 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     // TODO: Handle BanUser
     // TODO: Add SendMessage to UserComponent
 
-
     // Trigger events
-
+    OnChannelJoined(*chat_channel, *chat_user);
 
     return true;
   } else if (message_type == kChannelMessageType_LeaveChannel_Complete) {
