@@ -267,7 +267,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     chat_channel->OperatorsMutex.lock();
     chat_channel->ClientsMutex.lock();
-    client_buffer.WriteUInt64(chat_channel->Clients.size());
+    client_buffer.WriteUInt64(chat_channel->Clients.size() - 1);
     for (auto &pair : chat_channel->Clients) {
       if (pair.first != &client && pair.second->Enabled) {
         client_buffer.WriteString(pair.second->Username);
