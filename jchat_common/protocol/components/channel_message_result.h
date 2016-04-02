@@ -39,18 +39,23 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_MessageSent,
 
   // OpUser
+  kChannelMessageResult_AlreadyOperator,
   kChannelMessageResult_UserOpped,
 
   // DeopUser
+  kChannelMessageResult_AlreadyNotOperator,
   kChannelMessageResult_UserDeopped,
 
   // KickUser
+  kChannelMessageResult_UserNotInChannel,
   kChannelMessageResult_UserKicked,
 
   // BanUser
+  kChannelMessageResult_AlreadyBanned,
   kChannelMessageResult_UserBanned,
 
   // UnbanUser
+  kChannelMessageResult_NotBanned,
   kChannelMessageResult_UserUnbanned,
 
   kChannelMessageResult_Max

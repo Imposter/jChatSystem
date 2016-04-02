@@ -420,6 +420,26 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     channels_mutex_.unlock();
 
     return true;
+  } else if (message_type == kChannelMessageType_OpUser) {
+    // TODO: Implement
+
+    return false;
+  } else if (message_type == kChannelMessageType_DeopUser) {
+    // TODO: Implement
+
+    return false;
+  } else if (message_type == kChannelMessageType_KickUser) {
+    // TODO: Implement
+
+    return false;
+  } else if (message_type == kChannelMessageType_BanUser) {
+    // TODO: Implement
+
+    return true;
+  } else if (message_type == kChannelMessageType_UnbanUser) {
+    // TODO: Implement
+
+    return false;
   }
 
   return false;

@@ -11,6 +11,7 @@
 #include "chat_server.h"
 #include "protocol/version.h"
 #include "protocol/components/channel_message_type.h"
+#include "string.hpp"
 
 namespace jchat {
 ChannelComponent::ChannelComponent() {
@@ -604,6 +605,260 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     OnChannelMessage(*chat_channel, *chat_user, message);
 
     return true;
+  } else if (message_type == kChannelMessageType_OpUser) {
+    // TODO: Implement
+    return false;
+  } else if (message_type == kChannelMessageType_DeopUser) {
+    // TODO: Implement
+    return false;
+  } else if (message_type == kChannelMessageType_KickUser) {
+    // TODO: Implement
+    return false;
+  } else if (message_type == kChannelMessageType_BanUser) {
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+
+    std::string target;
+    if (!buffer.ReadString(target)) {
+      return false;
+    }
+
+    // Get user component
+    std::shared_ptr<UserComponent> user_component;
+    if (!server_->GetComponent(kComponentType_User, user_component)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(client, chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Check if the user is logged in
+    if (!chat_user->Identified) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_NotIdentified, channel_name,
+        target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the channel name is valid
+    if (channel_name.empty() || channel_name[0] != '#') {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_InvalidChannelName,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the target is valid
+    if (target.empty() || String::Contains(target, "#")) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidUsername);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_InvalidUsername,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the channel exists
+    std::shared_ptr<ChatChannel> chat_channel;
+    channels_mutex_.lock();
+    for (auto &channel : channels_) {
+      if (channel->Enabled && channel->Name == channel_name) {
+        chat_channel = channel;
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    if (!chat_channel) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_InvalidChannelName,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the user is in the channel
+    chat_channel->ClientsMutex.lock();
+    if (chat_channel->Clients.find(&client) == chat_channel->Clients.end()) {
+      chat_channel->ClientsMutex.unlock();
+
+      // Notify the client that they are not in the channel
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotInChannel);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_NotInChannel, chat_channel->Name,
+        target, *chat_user);
+
+      return true;
+    }
+    chat_channel->ClientsMutex.unlock();
+
+    // Check if the user has permissions
+    chat_channel->OperatorsMutex.lock();
+    if (chat_channel->Operators.find(&client)
+      == chat_channel->Operators.end()) {
+      chat_channel->OperatorsMutex.unlock();
+
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotPermitted);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_NotPermitted,
+        chat_channel->Name, target, *chat_user);
+
+      return true;
+    }
+    chat_channel->OperatorsMutex.unlock();
+
+    // TODO: Check if the user is trying to ban themself
+    
+
+    // Check if the target is in the channel
+    RemoteChatClient *ban_user_key = 0;
+    std::shared_ptr<ChatUser> ban_user;
+    std::string target_string;
+    chat_channel->ClientsMutex.lock();
+    for (auto pair : chat_channel->Clients) {
+      if (pair.second->Username == target) {
+        ban_user_key = pair.first;
+        ban_user = pair.second;
+        target_string = pair.second->Username + "@" + pair.second->Hostname;
+        break;
+      }
+    }
+    chat_channel->ClientsMutex.unlock();
+    if (target_string.empty()) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidUsername);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_InvalidUsername,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the target is already banned
+    chat_channel->BannedUsersMutex.lock();
+    for (auto &banned_user : chat_channel->BannedUsers) {
+      if (banned_user == target) {
+        chat_channel->BannedUsersMutex.unlock();
+
+        TypedBuffer send_buffer = server_->CreateBuffer();
+        send_buffer.WriteUInt16(kChannelMessageResult_AlreadyBanned);
+        send_buffer.WriteString(chat_channel->Name);
+        send_buffer.WriteString(target);
+        server_->Send(client, kComponentType_Channel,
+          kChannelMessageType_BanUser_Complete, send_buffer);
+
+        // Trigger events
+        OnBanUserCompleted(kChannelMessageResult_NotInChannel,
+          chat_channel->Name, target, *chat_user);
+
+        return true;
+      }
+    }
+
+    // Ban the user
+    chat_channel->BannedUsers.push_back(target_string);
+    chat_channel->BannedUsersMutex.unlock();
+
+    // Notify other clients
+    TypedBuffer clients_buffer = server_->CreateBuffer();
+    clients_buffer.WriteUInt16(kChannelMessageResult_UserBanned);
+    clients_buffer.WriteString(chat_channel->Name);
+    clients_buffer.WriteString(ban_user->Username);
+    clients_buffer.WriteString(ban_user->Hostname);
+
+    for (auto &pair : chat_channel->Clients) {
+      if (pair.first != &client && pair.second->Enabled) {
+        server_->Send(pair.first, kComponentType_Channel,
+          kChannelMessageType_BanUser_Complete, clients_buffer);
+      }
+    }
+
+    // Tell the client that the user was banned
+    TypedBuffer send_buffer = server_->CreateBuffer();
+    send_buffer.WriteUInt16(kChannelMessageResult_Ok);
+    send_buffer.WriteString(chat_channel->Name);
+    send_buffer.WriteString(ban_user->Username);
+    send_buffer.WriteString(ban_user->Hostname);
+    server_->Send(client, kComponentType_Channel,
+      kChannelMessageType_BanUser_Complete, send_buffer);
+
+    // Remove the client from channel client lists
+    chat_channel->OperatorsMutex.lock();
+    if (chat_channel->Operators.find(ban_user_key)
+      != chat_channel->Operators.end()) {
+      chat_channel->Operators.erase(ban_user_key);
+    }
+    chat_channel->OperatorsMutex.unlock();
+
+    chat_channel->ClientsMutex.lock();
+    if (chat_channel->Clients.find(ban_user_key)
+      != chat_channel->Clients.end()) {
+      chat_channel->Clients.erase(ban_user_key);
+    }
+    chat_channel->ClientsMutex.unlock();
+
+    // Trigger events
+    OnBanUserCompleted(kChannelMessageResult_Ok, chat_channel->Name,
+      target, *chat_user);
+    OnChannelUserBanned(*chat_channel, *ban_user);
+
+    return true;
+  } else if (message_type == kChannelMessageType_UnbanUser) {
+    // TODO: Implement
+    return false;
   }
 
   return false;

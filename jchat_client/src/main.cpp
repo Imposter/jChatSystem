@@ -175,6 +175,8 @@ int main(int argc, char **argv) {
     return true;
   });
 
+  // TODO: Add event handlers for op/deop/kick/ban/unban
+
   // Add the components to the client instance
   chat_client.AddComponent(system_component);
   chat_client.AddComponent(user_component);
@@ -232,6 +234,26 @@ int main(int argc, char **argv) {
         } else {
           // TODO: Implement client direct messaging
         }
+      } else if (command == "op" && arguments.size() == 2) {
+        std::string &channel = arguments[0];
+        std::string &target = arguments[1];
+        channel_component->OpUser(channel, target);
+      } else if (command == "deop" && arguments.size() == 2) {
+        std::string &channel = arguments[0];
+        std::string &target = arguments[1];
+        channel_component->DeopUser(channel, target);
+      } else if (command == "kick" && arguments.size() == 2) {
+        std::string &channel = arguments[0];
+        std::string &target = arguments[1];
+        channel_component->KickUser(channel, target);
+      } else if (command == "ban" && arguments.size() == 2) {
+        std::string &channel = arguments[0];
+        std::string &target = arguments[1];
+        channel_component->BanUser(channel, target);
+      } else if (command == "unban" && arguments.size() == 2) {
+        std::string &channel = arguments[0];
+        std::string &target = arguments[1];
+        channel_component->UnbanUser(channel, target);
       } else if (command == "quit" && arguments.size() == 0) {
         exit(0);
       } else {
