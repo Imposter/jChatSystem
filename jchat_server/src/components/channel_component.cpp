@@ -755,8 +755,21 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
     chat_channel->OperatorsMutex.unlock();
 
-    // TODO: Check if the user is trying to ban themself
-    
+    // Check if the user is trying to ban themself
+    if (target == chat_user->Username) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_CannotBanSelf);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_BanUser_Complete, send_buffer);
+
+      // Trigger events
+      OnBanUserCompleted(kChannelMessageResult_CannotBanSelf,
+        chat_channel->Name, target, *chat_user);
+
+      return true;
+    }
 
     // Check if the target is in the channel
     RemoteChatClient *ban_user_key = 0;

@@ -52,6 +52,7 @@ enum ChannelMessageResult : uint16_t {
 
   // BanUser
   kChannelMessageResult_AlreadyBanned,
+  kChannelMessageResult_CannotBanSelf,
   kChannelMessageResult_UserBanned,
 
   // UnbanUser
