@@ -45,11 +45,9 @@ bool ChatServer::Start() {
     return false;
   }
 
-  components_mutex_.lock();
   for (auto component : components_) {
     component->OnStart();
   }
-  components_mutex_.unlock();
 
   is_listening_ = true;
 
@@ -76,11 +74,9 @@ bool ChatServer::Stop() {
   }
   clients_mutex_.unlock();
 
-  components_mutex_.lock();
   for (auto component : components_) {
     component->OnStop();
   }
-  components_mutex_.unlock();
 
   is_listening_ = false;
 
@@ -182,11 +178,9 @@ bool ChatServer::onClientConnected(TcpClient &tcp_client) {
   // address and port)
   chat_client->Endpoint = tcp_client.GetRemoteEndpoint();
 
-  components_mutex_.lock();
   for (auto component : components_) {
     component->OnClientConnected(*chat_client);
   }
-  components_mutex_.unlock();
 
   clients_mutex_.lock();
   clients_[&tcp_client] = chat_client;
@@ -202,11 +196,9 @@ bool ChatServer::onClientDisconnected(TcpClient &tcp_client) {
   RemoteChatClient *chat_client = clients_[&tcp_client];
   clients_mutex_.unlock();
 
-  components_mutex_.lock();
   for (auto component : components_) {
     component->OnClientDisconnected(*chat_client);
   }
-  components_mutex_.unlock();
 
   // TODO/NOTE: We need to remove the client from any channels where they're in
   // or where they have operator or any privileges, and we can do this in the
@@ -262,7 +254,6 @@ bool ChatServer::onDataReceived(TcpClient &tcp_client, Buffer &buffer) {
     RemoteChatClient *chat_client = clients_[&tcp_client];
     clients_mutex_.unlock();
 
-    components_mutex_.lock();
     for (auto component : components_) {
       if (component->GetType() == static_cast<ComponentType>(component_type)) {
         if (component->Handle(*chat_client, message_type, typed_buffer)) {
@@ -271,7 +262,6 @@ bool ChatServer::onDataReceived(TcpClient &tcp_client, Buffer &buffer) {
         }
       }
     }
-    components_mutex_.unlock();
   }
 
   return handled;
