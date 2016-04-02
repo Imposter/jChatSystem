@@ -22,7 +22,6 @@ class ChatClient {
   TcpClient tcp_client_;
   bool is_little_endian_;
   std::vector<std::shared_ptr<ChatComponent>> components_;
-  std::mutex components_mutex_;
 
   // Internal events
   bool onConnected();

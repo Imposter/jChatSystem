@@ -23,7 +23,6 @@ class ChatServer {
   TcpServer tcp_server_;
   bool is_little_endian_;
   std::vector<std::shared_ptr<ChatComponent>> components_;
-  std::mutex components_mutex_;
   std::map<TcpClient *, RemoteChatClient *> clients_;
   std::mutex clients_mutex_;
 
