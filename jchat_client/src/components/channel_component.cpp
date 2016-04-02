@@ -80,18 +80,18 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     }
 
     // Get user component
-	  std::shared_ptr<UserComponent> user_component;
-	  if (!client_->GetComponent(kComponentType_User, user_component)) {
+    std::shared_ptr<UserComponent> user_component;
+    if (!client_->GetComponent(kComponentType_User, user_component)) {
       // Internal error, disconnect client
-		  return false;
-	  }
+      return false;
+    }
 
-	  // Get the chat client
-	  std::shared_ptr<ChatUser> chat_user;
-	  if (!user_component->GetChatUser(chat_user)) {
-		  // Internal error, disconnect client
-		  return false;
-	  }
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
 
     // Add the local user
     chat_channel->Clients.push_back(chat_user);
@@ -152,10 +152,10 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-	std::string channel_name;
-	if (!buffer.ReadString(channel_name)) {
-		return false;
-	}
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
     OnLeaveCompleted(static_cast<ChannelMessageResult>(message_result), channel_name);
     if (message_result != kChannelMessageResult_Ok
       && message_result != kChannelMessageResult_ChannelDestroyed) {

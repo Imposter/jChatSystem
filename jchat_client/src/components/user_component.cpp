@@ -51,19 +51,18 @@ bool UserComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadUInt16(message_result)) {
       return false;
     }
-	std::string username;
-	if (!buffer.ReadString(username)) {
-		return false;
-	}
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
     OnIdentified(static_cast<UserMessageResult>(message_result), username);
     if (message_result == kUserMessageResult_Ok) {
-	  std::string hostname;
-	  if (!buffer.ReadString(hostname)) {
-		  return false;
-	  }
-
-	  user_->Username = username;
-	  user_->Hostname = hostname;
+      std::string hostname;
+      if (!buffer.ReadString(hostname)) {
+        return false;
+      }
+      user_->Username = username;
+      user_->Hostname = hostname;
       user_->Identified = true;
     }
 

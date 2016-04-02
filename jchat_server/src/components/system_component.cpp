@@ -63,21 +63,21 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
 
     // Get user component
-	  std::shared_ptr<UserComponent> user_component;
-	  if (!server_->GetComponent(kComponentType_User, user_component)) {
+    std::shared_ptr<UserComponent> user_component;
+    if (!server_->GetComponent(kComponentType_User, user_component)) {
       // Internal error, disconnect client
-		  return false;
-	  }
+      return false;
+    }
 
-	  // Get the chat client
-	  std::shared_ptr<ChatUser> chat_user;
-	  if (!user_component->GetChatUser(client, chat_user)) {
-		  // Internal error, disconnect client
-		  return false;
-	  }
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(client, chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
 
-	  // Set as enabled
-	  chat_user->Enabled = true;
+    // Set as enabled
+    chat_user->Enabled = true;
 
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kSystemMessageResult_Ok);
