@@ -125,7 +125,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     // Get user component
     UserComponent *user_component = 0;
-    if (!server_->GetComponent(kComponentType_User, user_component)) {
+    if (!server_->GetComponent(kComponentType_User, &user_component)) {
       // Internal error, disconnect client
       return false;
     }
@@ -277,7 +277,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     // Get user component
     UserComponent *user_component = 0;
-    if (!server_->GetComponent(kComponentType_User, user_component)) {
+    if (!server_->GetComponent(kComponentType_User, &user_component)) {
       // Internal error, disconnect client
       return false;
     }

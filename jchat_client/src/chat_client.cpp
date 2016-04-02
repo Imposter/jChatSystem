@@ -93,12 +93,12 @@ bool ChatClient::RemoveComponent(ChatComponent *component) {
 }
 
 bool ChatClient::GetComponent(ComponentType component_type,
-  ChatComponent *out_component) {
+  ChatComponent **out_component) {
   components_mutex_.lock();
   for (auto component : components_) {
     if (component->GetType() == component_type) {
       components_mutex_.unlock();
-      out_component = component;
+      *out_component = component;
       return true;
     }
   }

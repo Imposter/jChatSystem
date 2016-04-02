@@ -192,10 +192,9 @@ bool UserComponent::GetChatUser(RemoteChatClient &client,
   if (users_.find(&client) == users_.end()) {
     users_mutex_.unlock();
     return false;
-  } else {
-    out_user = users_[&client];
-    users_mutex_.unlock();
-    return true;
   }
+  out_user = users_[&client];
+  users_mutex_.unlock();
+  return true;
 }
 }

@@ -62,10 +62,9 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       return false;
     }
 
-	/*
 	// Get user component
 	UserComponent *user_component = 0;
-	if (!server_->GetComponent(kComponentType_User, user_component)) {
+	if (!server_->GetComponent(kComponentType_User, &user_component)) {
 		// Internal error, disconnect client
 		return false;
 	}
@@ -79,7 +78,6 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
 	// Set as enabled
 	chat_user->Enabled = true;
-	*/
 
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kSystemMessageResult_Ok);

@@ -39,9 +39,9 @@ public:
   bool AddComponent(ChatComponent *component);
   bool RemoveComponent(ChatComponent *component);
 
-  bool GetComponent(ComponentType component_type, ChatComponent *out_component);
+  bool GetComponent(ComponentType component_type, ChatComponent **out_component);
   template<typename _TComponent>
-  bool GetComponent(ComponentType component_type, _TComponent *out_component) {
+  bool GetComponent(ComponentType component_type, _TComponent **out_component) {
      return GetComponent(component_type,
        reinterpret_cast<ChatComponent *>(out_component));
   }

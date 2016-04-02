@@ -124,12 +124,16 @@ bool ChatServer::RemoveComponent(ChatComponent *component) {
 }
 
 bool ChatServer::GetComponent(ComponentType component_type,
-  ChatComponent *out_component) {
-  components_mutex_.lock();
+  ChatComponent **out_component) {
+  // TODO/NOTE: This causes a crash when locking twice, so what
+  // we need to do here is duplicate the component vector
+  // and search that, also use std::shared_ptr internally 
+  // for these...
+  components_mutex_.try_lock(); 
   for (auto component : components_) {
     if (component->GetType() == component_type) {
       components_mutex_.unlock();
-      out_component = component;
+      *out_component = component;
       return true;
     }
   }
