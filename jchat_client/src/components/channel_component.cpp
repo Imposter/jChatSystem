@@ -75,6 +75,7 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
+    chat_channel->Enabled = true;
 
     // Add the channel to the channel list
     channels_mutex_.lock();
@@ -188,7 +189,48 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       return true;
     }
 
-    // TODO: Remove the ChatChannel and do necessary actions
+    // Get user component
+    std::shared_ptr<UserComponent> user_component;
+    if (!client_->GetComponent(kComponentType_User, user_component)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Remove the ChatChannel and do necessary actions
+    channels_mutex_.lock();
+    for (auto it = channels_.begin(); it != channels_.end(); ++it) {
+      std::shared_ptr<ChatChannel> &chat_channel = *it;
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        OnChannelLeft(*chat_channel, *chat_user);
+
+        // Disable the channel
+        chat_channel->Enabled = false;
+
+        // Clear all information
+        chat_channel->OperatorsMutex.lock();
+        chat_channel->Operators.clear();
+        chat_channel->OperatorsMutex.unlock();
+
+        chat_channel->ClientsMutex.lock();
+        chat_channel->Clients.clear();
+        chat_channel->ClientsMutex.unlock();
+
+        chat_channel->BannedUsersMutex.lock();
+        chat_channel->BannedUsers.clear();
+        chat_channel->BannedUsersMutex.unlock();
+
+        // Remove the channel
+        it = channels_.erase(it);
+      }
+    }
+    channels_mutex_.unlock();
 
     return true;
   }

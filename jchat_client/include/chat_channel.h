@@ -15,6 +15,7 @@
 
 namespace jchat {
 struct ChatChannel {
+  bool Enabled;
   std::string Name;
   std::vector<std::shared_ptr<ChatUser>> Operators;
   std::mutex OperatorsMutex;
