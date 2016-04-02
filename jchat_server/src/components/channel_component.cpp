@@ -181,7 +181,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     if (!chat_channel) {
       // Create the channel and add the user to it
       chat_channel = std::make_shared<ChatChannel>();
-	  chat_channel->Enabled = true;
+      chat_channel->Enabled = true;
       chat_channel->Name = channel_name;
       chat_channel->Operators[&client] = chat_user;
       chat_channel->Clients[&client] = chat_user;
@@ -382,8 +382,8 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     // Check if the user is in the channel
     chat_channel->ClientsMutex.lock();
-	if (chat_channel->Clients.find(&client) == chat_channel->Clients.end()) {
-	  chat_channel->ClientsMutex.unlock();
+    if (chat_channel->Clients.find(&client) == chat_channel->Clients.end()) {
+      chat_channel->ClientsMutex.unlock();
 
       // Notify the client that they are not in the channel
       TypedBuffer send_buffer = server_->CreateBuffer();
@@ -400,19 +400,19 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     }
     chat_channel->ClientsMutex.unlock();
 
-	// Notify all clients in that channel that the client left
-	TypedBuffer clients_buffer = server_->CreateBuffer();
-	clients_buffer.WriteUInt16(kChannelMessageResult_UserLeft);
-	clients_buffer.WriteString(chat_channel->Name);
-	clients_buffer.WriteString(chat_user->Username);
-	clients_buffer.WriteString(chat_user->Hostname);
+    // Notify all clients in that channel that the client left
+    TypedBuffer clients_buffer = server_->CreateBuffer();
+    clients_buffer.WriteUInt16(kChannelMessageResult_UserLeft);
+    clients_buffer.WriteString(chat_channel->Name);
+    clients_buffer.WriteString(chat_user->Username);
+    clients_buffer.WriteString(chat_user->Hostname);
 
-	for (auto &pair : chat_channel->Clients) {
-		if (pair.first != &client && pair.second->Enabled) {
-			server_->Send(pair.first, kComponentType_Channel,
-				kChannelMessageType_LeaveChannel, clients_buffer);
-		}
-	}
+    for (auto &pair : chat_channel->Clients) {
+      if (pair.first != &client && pair.second->Enabled) {
+        server_->Send(pair.first, kComponentType_Channel,
+          kChannelMessageType_LeaveChannel, clients_buffer);
+      }
+    }
 
     // Notify the client that they left the channel
     TypedBuffer send_buffer = server_->CreateBuffer();
@@ -423,23 +423,24 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     // Trigger events
     OnLeaveCompleted(kChannelMessageResult_Ok, chat_channel->Name, *chat_user);
-	OnChannelLeft(*chat_channel, *chat_user);
+    OnChannelLeft(*chat_channel, *chat_user);
 
-	// Remove the client from the clients list
-	chat_channel->Clients.erase(&client);
+    // Remove the client from the clients list
+    chat_channel->Clients.erase(&client);
 
-	// Remove the client from the operators list if they're an operator
-	chat_channel->OperatorsMutex.lock();
-	if (chat_channel->Operators.find(&client) != chat_channel->Operators.end()) {
-		chat_channel->Operators.erase(&client);
-	}
-	chat_channel->OperatorsMutex.unlock();
+    // Remove the client from the operators list if they're an operator
+    chat_channel->OperatorsMutex.lock();
+    if (chat_channel->Operators.find(&client)
+      != chat_channel->Operators.end()) {
+      chat_channel->Operators.erase(&client);
+    }
+    chat_channel->OperatorsMutex.unlock();
 
-	// If there was nobody in the channel delete it
-	if (chat_channel->Clients.empty()) {
-		chat_channel->Enabled = false;
-		chat_channel.reset();
-	}
+    // If there was nobody in the channel delete it
+    if (chat_channel->Clients.empty()) {
+      chat_channel->Enabled = false;
+      chat_channel.reset();
+    }
 
     return true;
   }
