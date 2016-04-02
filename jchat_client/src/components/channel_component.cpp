@@ -75,16 +75,13 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     // Create the ChatChannel and do necessary actions
     auto chat_channel = std::make_shared<ChatChannel>();
+	chat_channel->Name = channel_name;
     chat_channel->Enabled = true;
 
     // Add the channel to the channel list
     channels_mutex_.lock();
     channels_.push_back(chat_channel);
     channels_mutex_.unlock();
-
-    if (!buffer.ReadString(chat_channel->Name)) {
-      return false;
-    }
 
     // Get user component
     std::shared_ptr<UserComponent> user_component;
