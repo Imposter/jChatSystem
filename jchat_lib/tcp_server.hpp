@@ -91,11 +91,11 @@ class TcpServer {
       for (auto tcp_client = accepted_clients_.begin();
         tcp_client != accepted_clients_.end();) {
         if (FD_ISSET((*tcp_client)->client_socket_, &socket_set)) {
-          uint32_t read_bytes = recv((*tcp_client)->client_socket_,
+          int32_t read_bytes = recv((*tcp_client)->client_socket_,
             (char *)(*tcp_client)->read_buffer_.data(),
             (*tcp_client)->read_buffer_.size(), 0);
           bool disconnect_client = false;
-          if (read_bytes > 0) {
+          if (read_bytes > 0 && read_bytes < JCHAT_TCP_BUFFER_SIZE) {
             Buffer buffer((*tcp_client)->read_buffer_.data(), read_bytes);
             if (!OnDataReceived(**tcp_client, buffer)) {
               disconnect_client = true;

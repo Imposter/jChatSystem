@@ -54,7 +54,7 @@ typedef int SOCKET;
 #endif
 
 #ifndef JCHAT_TCP_CLIENT_BUFFER_SIZE
-#define JCHAT_TCP_CLIENT_BUFFER_SIZE 8192
+#define JCHAT_TCP_BUFFER_SIZE 8192
 #endif // JCHAT_TCP_CLIENT_BUFFER_SIZE
 
 namespace jchat {
@@ -96,10 +96,10 @@ class TcpClient {
 
       // Check if there was some operation completed on the client socket
       if (FD_ISSET(client_socket_, &socket_set)) {
-        uint32_t read_bytes = recv(client_socket_, (char *)read_buffer_.data(),
+        int32_t read_bytes = recv(client_socket_, (char *)read_buffer_.data(),
           read_buffer_.size(), 0);
         bool disconnect_client = false;
-        if (read_bytes > 0) {
+        if (read_bytes > 0 && read_bytes < JCHAT_TCP_BUFFER_SIZE) {
           Buffer buffer(read_buffer_.data(), read_bytes);
           if (!OnDataReceived(buffer)) {
             disconnect_client = true;
@@ -124,7 +124,7 @@ public:
     : hostname_(hostname), port_(port), client_socket_(0),
     remote_endpoint_(hostname, port), is_connected_(false),
     is_internal_(false) {
-    read_buffer_.resize(JCHAT_TCP_CLIENT_BUFFER_SIZE);
+    read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
 #if defined(OS_WIN)
 		// Initialize Winsock
@@ -160,7 +160,7 @@ public:
     sockaddr_in server_endpoint) : client_socket_(client_socket),
     client_endpoint_(client_endpoint), remote_endpoint_(server_endpoint),
     is_connected_(true), is_internal_(true) {
-    read_buffer_.resize(JCHAT_TCP_CLIENT_BUFFER_SIZE);
+    read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
 #if defined(OS_LINUX)
 	uint32_t flags = fcntl(client_socket, F_GETFL, 0);
