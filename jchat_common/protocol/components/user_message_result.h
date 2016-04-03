@@ -28,6 +28,7 @@ enum UserMessageResult : uint16_t {
 
   // SendMessage
   kUserMessageResult_InvalidMessage,
+  kUserMessageResult_MessageTooLong,
   kUserMessageResult_UserNotIdentified,
   kUserMessageResult_CannotMessageSelf,
   kUserMessageResult_MessageSent,

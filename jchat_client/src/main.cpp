@@ -82,6 +82,12 @@ int main(int argc, char **argv) {
     } else if (result == jchat::kUserMessageResult_UserNotIdentified) {
       std::cout << "User: User not identified! (" << username  << ", \""
         << message << "\")" << std::endl;
+    } else if (result == jchat::kUserMessageResult_InvalidMessage) {
+      std::cout << "User: Invalid message! (" << username  << ", \""
+        << message << "\")" << std::endl;
+    } else if (result == jchat::kUserMessageResult_MessageTooLong) {
+      std::cout << "User: Message too long! (" << username  << ", \""
+        << message << "\")" << std::endl;
     } else if (result == jchat::kUserMessageResult_CannotMessageSelf) {
       std::cout << "User: Cannot message self! (" << username  << ", \""
         << message << "\")" << std::endl;
@@ -150,6 +156,9 @@ int main(int argc, char **argv) {
     std::string &message) {
     if (result == jchat::kChannelMessageResult_InvalidMessage) {
       std::cout << "Channel: Invalid message! (" << channel_name << ", \""
+      << message << "\")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_MessageTooLong) {
+      std::cout << "Channel: Message too long! (" << channel_name << ", \""
       << message << "\")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
       std::cout << "Channel: Not in channel! (" << channel_name << ", \""

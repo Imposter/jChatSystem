@@ -298,6 +298,37 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       return true;
     }
 
+    // Check the message
+    if (message.empty()) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_InvalidMessage);
+      send_buffer.WriteString(username);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_User,
+        kUserMessageType_SendMessage_Complete, send_buffer);
+
+      // Trigger events
+      OnSendMessageCompleted(kUserMessageResult_InvalidMessage, username,
+        message, *chat_user);
+
+      return true;
+    }
+
+    if (message.size() > JCHAT_CHAT_MESSAGE_LENGTH) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_MessageTooLong);
+      send_buffer.WriteString(username);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_User,
+        kUserMessageType_SendMessage_Complete, send_buffer);
+
+      // Trigger events
+      OnSendMessageCompleted(kUserMessageResult_MessageTooLong, username,
+        message, *chat_user);
+
+      return true;
+    }
+
     // Send the message
     TypedBuffer client_buffer = server_->CreateBuffer();
     client_buffer.WriteUInt16(kUserMessageResult_MessageSent);

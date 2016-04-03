@@ -553,6 +553,21 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       return true;
     }
 
+    if (message.size() > JCHAT_CHAT_MESSAGE_LENGTH) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_MessageTooLong);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_SendMessage_Complete, send_buffer);
+
+      // Trigger events
+      OnSendMessageCompleted(kChannelMessageResult_MessageTooLong,
+        channel_name, message, *chat_user);
+
+      return true;
+    }
+
     // Check if the channel exists
     std::shared_ptr<ChatChannel> chat_channel;
     channels_mutex_.lock();

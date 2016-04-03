@@ -19,7 +19,7 @@ The following is a list of planned and current features:
 ## Installation/Usage
 
 1. Download, or clone repository using `git clone https://github.com/Imposter/jChatSystem.git`
-2. Set up the project using `premake5_* [gmake|vs2013|vs2015]`. Depending on your platform you can use `premake5_linux`, `premake_osx`, `premake_windows`
+2. Set up the project using `premake5_* [gmake|vs2013|vs2015]`. Depending on your platform you can use `premake5_linux`, `premake5_osx`, `premake5_windows.exe`
 3. Once you've created the project, you can either open `jchat.sln` or build using:
   * Configurations:
     * debug_win32 *

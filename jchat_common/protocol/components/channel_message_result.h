@@ -38,6 +38,7 @@ enum ChannelMessageResult : uint16_t {
 
   // SendMessage
   kChannelMessageResult_InvalidMessage,
+  kChannelMessageResult_MessageTooLong,
   kChannelMessageResult_MessageSent,
 
   // OpUser
