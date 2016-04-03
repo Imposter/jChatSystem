@@ -233,6 +233,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
       return true;
     }
+    chat_channel->ClientsMutex.unlock();
 
     // Check if the user is banned
     chat_channel->BannedUsersMutex.lock();
@@ -258,6 +259,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     chat_channel->BannedUsersMutex.unlock();
 
     // Add the user to the channel
+    chat_channel->ClientsMutex.lock();
     chat_channel->Clients[&client] = chat_user;
     chat_channel->ClientsMutex.unlock();
 
@@ -421,12 +423,14 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     clients_buffer.WriteString(chat_user->Username);
     clients_buffer.WriteString(chat_user->Hostname);
 
+    chat_channel->ClientsMutex.lock();
     for (auto &pair : chat_channel->Clients) {
       if (pair.first != &client && pair.second->Enabled) {
         server_->Send(pair.first, kComponentType_Channel,
           kChannelMessageType_LeaveChannel, clients_buffer);
       }
     }
+    chat_channel->ClientsMutex.unlock();
 
     // Notify the client that they left the channel
     TypedBuffer send_buffer = server_->CreateBuffer();
@@ -451,9 +455,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     chat_channel->OperatorsMutex.unlock();
 
     // If there was nobody in the channel delete it
+    chat_channel->Clients.lock();
     if (chat_channel->Clients.empty()) {
+      chat_channel->Clients.unlock();
       chat_channel->Enabled = false;
       chat_channel.reset();
+    } else {
+      chat_channel->Clients.unlock();
     }
 
     return true;
@@ -585,12 +593,14 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     clients_buffer.WriteString(chat_user->Hostname);
     clients_buffer.WriteString(message);
 
+    chat_channel->ClientsMutex.lock();
     for (auto &pair : chat_channel->Clients) {
       if (pair.first != &client && pair.second->Enabled) {
         server_->Send(pair.first, kComponentType_Channel,
           kChannelMessageType_SendMessage, clients_buffer);
       }
     }
+    chat_channel->ClientsMutex.unlock();
 
     // Tell the client that the message was sent
     TypedBuffer send_buffer = server_->CreateBuffer();
