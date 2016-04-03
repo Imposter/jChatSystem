@@ -2,20 +2,35 @@
 
 jChatSystem is a TCP network based chat system, using clients and a server. It is a very basic way to communicate using a command line as the interface. It will feature a room-based system and will require client authentication.
 
+## Features
+
+The following is a list of planned and current features:
+* User identification
+* Direct messaging
+* Channel management
+  * Ban user
+  * Kick user
+  * Op user *
+  * Deop user *
+  * Unban user *
+  `* Planned`
+* Channel messaging
+
 ## Installation/Usage
 
 1. Download, or clone repository using `git clone https://github.com/Imposter/jChatSystem.git`
 2. Set up the project using `premake5_* [gmake|vs2013|vs2015]`. Depending on your platform you can use `premake5_linux`, `premake_osx`, `premake_windows`
 3. Once you've created the project, you can either open `jchat.sln` or build using:
   * Configurations:
-    * debug_win32 (`GNU compilers may not work`)
+    * debug_win32 *
     * debug_win64
-    * debug_unix32 (`GNU compilers may not work`)
+    * debug_unix32 *
     * debug_unix64
-    * release_win32 (`GNU compilers may not work`)
+    * release_win32 *
     * release_win64
-    * release_unix32 (`GNU compilers may not work`)
+    * release_unix32 *
     * release_unix64
+    `* GNU compilers may not work`
   * `make config=debug_unix32 all`
 4. You can launch the program in the corresponding platform and configuration in the `build/` directory
 

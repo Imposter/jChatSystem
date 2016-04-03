@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     }
     return true;
   });
-  user_component->OnIdentified.Add([](jchat::UserMessageResult result,
+  user_component->OnIdentifyCompleted.Add([](jchat::UserMessageResult result,
 	  std::string &username) {
     if (result == jchat::kUserMessageResult_Ok) {
       std::cout << "User: Successfully identified! (" << username << ")"
@@ -69,6 +69,37 @@ int main(int argc, char **argv) {
       std::cout << "User: Already identified! (" << username << ")"
         << std::endl;
     }
+    return true;
+  });
+  user_component->OnSendMessageCompleted.Add([](jchat::UserMessageResult result,
+	  std::string &username, std::string &message) {
+    if (result == jchat::kUserMessageResult_InvalidUsername) {
+      std::cout << "User: Invalid username! (" << username  << ", "
+        << message << ")" << std::endl;
+    } else if (result == jchat::kUserMessageResult_NotIdentified) {
+      std::cout << "User: Not identified! (" << username  << ", "
+        << message << ")" << std::endl;
+    } else if (result == jchat::kUserMessageResult_UserNotIdentified) {
+      std::cout << "User: User not identified! (" << username  << ", "
+        << message << ")" << std::endl;
+    } else if (result == jchat::kUserMessageResult_CannotMessageSelf) {
+      std::cout << "User: Cannot message self! (" << username  << ", "
+        << message << ")" << std::endl;
+    }
+    return true;
+  });
+  user_component->OnMessage.Add([=](std::string &source_username,
+    std::string &source_hostname, std::string &target, std::string &message) {
+    std::shared_ptr<jchat::ChatUser> user;
+    if (!user_component->GetChatUser(user)) {
+      return false;
+    }
+
+    if (user->Username != source_username) {
+      std::cout << source_username << " => " << target << ": " << message
+        << std::endl;
+    }
+
     return true;
   });
   channel_component->OnJoinCompleted.Add([](jchat::ChannelMessageResult result,
@@ -444,9 +475,9 @@ int main(int argc, char **argv) {
         if (!target.empty() && target[0] == '#') {
           channel_component->SendMessage(target, message);
         } else {
-          // TODO: Implement client direct messaging
+          user_component->SendMessage(target, message);
         }
-      } else if (command == "op" && arguments.size() == 2) {
+      } /*else if (command == "op" && arguments.size() == 2) {
         std::string &channel = arguments[0];
         std::string &target = arguments[1];
         channel_component->OpUser(channel, target);
@@ -454,7 +485,7 @@ int main(int argc, char **argv) {
         std::string &channel = arguments[0];
         std::string &target = arguments[1];
         channel_component->DeopUser(channel, target);
-      } else if (command == "kick" && arguments.size() == 2) {
+      } */else if (command == "kick" && arguments.size() == 2) {
         std::string &channel = arguments[0];
         std::string &target = arguments[1];
         channel_component->KickUser(channel, target);
@@ -462,11 +493,11 @@ int main(int argc, char **argv) {
         std::string &channel = arguments[0];
         std::string &target = arguments[1];
         channel_component->BanUser(channel, target);
-      } else if (command == "unban" && arguments.size() == 2) {
+      } /*else if (command == "unban" && arguments.size() == 2) {
         std::string &channel = arguments[0];
         std::string &target = arguments[1];
         channel_component->UnbanUser(channel, target);
-      } else if (command == "quit" && arguments.size() == 0) {
+      } */else if (command == "quit" && arguments.size() == 0) {
         exit(0);
       } else {
         std::cout << "Invalid command" << std::endl;

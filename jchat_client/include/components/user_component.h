@@ -44,9 +44,14 @@ public:
   bool GetChatUser(std::shared_ptr<ChatUser> &out_user);
 
   bool Identify(std::string username);
+  bool SendMessage(std::string username, std::string message);
 
   // API events
-  Event<UserMessageResult, std::string &> OnIdentified;
+  Event<UserMessageResult, std::string &> OnIdentifyCompleted;
+  Event<UserMessageResult, std::string &, std::string &> OnSendMessageCompleted;
+
+  Event<> OnIdentified;
+  Event<std::string &, std::string &, std::string &, std::string &> OnMessage;
 };
 }
 

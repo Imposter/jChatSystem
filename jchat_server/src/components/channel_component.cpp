@@ -187,7 +187,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
 
     if (!chat_channel) {
       // Check if the channel name is too long
-      if (channel_name.size() > JCHAT_CHAT_CHANNEL_NAME_LENGTH) {
+      if (channel_name.size() - 1 > JCHAT_CHAT_CHANNEL_NAME_LENGTH) {
         TypedBuffer send_buffer = server_->CreateBuffer();
         send_buffer.WriteUInt16(kChannelMessageResult_ChannelNameTooLong);
         send_buffer.WriteString(channel_name);

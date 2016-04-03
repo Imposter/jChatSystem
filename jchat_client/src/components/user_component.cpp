@@ -54,7 +54,8 @@ bool UserComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
     if (!buffer.ReadString(username)) {
       return false;
     }
-    OnIdentified(static_cast<UserMessageResult>(message_result), username);
+    OnIdentifyCompleted(static_cast<UserMessageResult>(message_result),
+      username);
     if (message_result == kUserMessageResult_Ok) {
       std::string hostname;
       if (!buffer.ReadString(hostname)) {
@@ -63,8 +64,52 @@ bool UserComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       user_->Username = username;
       user_->Hostname = hostname;
       user_->Identified = true;
+
+      OnIdentified();
     }
 
+    return true;
+  } else if (message_type == kUserMessageType_SendMessage_Complete) {
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+    std::string message;
+    if (!buffer.ReadString(message)) {
+      return false;
+    }
+    OnSendMessageCompleted(static_cast<UserMessageResult>(message_result),
+      username, message);
+    if (message_result == kUserMessageResult_Ok) {
+      OnMessage(user_->Username, user_->Hostname, username, message);
+    }
+
+    return true;
+  } else if (message_type == kUserMessageType_SendMessage) {
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+    std::string message;
+    if (!buffer.ReadString(message)) {
+      return false;
+    }
+    if (message_result != kUserMessageResult_MessageSent) {
+      return false;
+    }
+    OnMessage(username, hostname, user_->Username, message);
     return true;
   }
 
@@ -82,7 +127,14 @@ bool UserComponent::GetChatUser(std::shared_ptr<ChatUser> &out_user) {
 bool UserComponent::Identify(std::string username) {
   TypedBuffer buffer = client_->CreateBuffer();
   buffer.WriteString(username);
-  return client_->Send(kComponentType_User, kUserMessageType_Identify,
+  return client_->Send(kComponentType_User, kUserMessageType_Identify, buffer);
+}
+
+bool UserComponent::SendMessage(std::string username, std::string message) {
+  TypedBuffer buffer = client_->CreateBuffer();
+  buffer.WriteString(username);
+  buffer.WriteString(message);
+  return client_->Send(kComponentType_User, kUserMessageType_SendMessage,
     buffer);
 }
 }

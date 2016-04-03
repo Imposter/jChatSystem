@@ -187,12 +187,12 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       kUserMessageType_Identify_Complete, send_buffer);
 
     // Trigger events
-    OnIdentifyCompleted(kUserMessageResult_Ok, chat_user->Hostname, *chat_user);
+    OnIdentifyCompleted(kUserMessageResult_Ok, username, *chat_user);
     OnIdentified(*chat_user);
 
     return true;
   } else if (message_type == kUserMessageType_SendMessage) {
-    /*std::string username;
+    std::string username;
     if (!buffer.ReadString(username)) {
       return false;
     }
@@ -206,6 +206,22 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     users_mutex_.lock();
     std::shared_ptr<ChatUser> chat_user = users_[&client];
     users_mutex_.unlock();
+
+    // Check if the client is not identified
+    if (chat_user && !chat_user->Identified) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_NotIdentified);
+      send_buffer.WriteString(username);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_User,
+        kUserMessageType_SendMessage_Complete, send_buffer);
+
+      // Trigger events
+      OnSendMessageCompleted(kUserMessageResult_NotIdentified, username,
+        message, *chat_user);
+
+      return true;
+    }
 
     // Check if the user is trying to message themself
     if (chat_user->Username == username) {
@@ -239,60 +255,71 @@ bool UserComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       return true;
     }
 
-    // Check if the client is already identified
-    if (chat_user && chat_user->Identified) {
-      TypedBuffer send_buffer = server_->CreateBuffer();
-      send_buffer.WriteUInt16(kUserMessageResult_AlreadyIdentified);
-      send_buffer.WriteString(username);
-      server_->Send(client, kComponentType_User,
-        kUserMessageType_Identify_Complete, send_buffer);
-
-      // Trigger events
-      OnIdentifyCompleted(kUserMessageResult_AlreadyIdentified, username,
-        *chat_user);
-
-      return true;
-    }
-
-    // Check if the username is in use
+    // Check if the user exists
+    RemoteChatClient *target_client = 0;
+    std::shared_ptr<ChatUser> target_user;
     users_mutex_.lock();
     for (auto &pair : users_) {
       if (pair.second->Enabled && pair.second->Identified
         && pair.second->Username == username) {
-        TypedBuffer send_buffer = server_->CreateBuffer();
-        send_buffer.WriteUInt16(kUserMessageResult_UsernameInUse);
-        send_buffer.WriteString(username);
-        server_->Send(client, kComponentType_User,
-          kUserMessageType_Identify_Complete, send_buffer);
-        users_mutex_.unlock();
-
-        // Trigger events
-        OnIdentifyCompleted(kUserMessageResult_UsernameInUse, username,
-          *chat_user);
-
-        return true;
+        target_client = pair.first;
+        target_user = pair.second;
       }
     }
     users_mutex_.unlock();
+    if (!target_user) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_InvalidUsername);
+      send_buffer.WriteString(username);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_User,
+        kUserMessageType_SendMessage_Complete, send_buffer);
 
-    // Set as identified and hash the hostname
-    chat_user->Identified = true;
-    chat_user->Username = username;
-    chat_user->Hostname = Utility::HashString(chat_user->Hostname.c_str(),
-      chat_user->Hostname.size());
+      // Trigger events
+      OnSendMessageCompleted(kUserMessageResult_InvalidUsername, username,
+        message, *chat_user);
+
+      return true;
+    }
+
+    // Check if the user is identified
+    if (!target_user->Identified) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kUserMessageResult_UserNotIdentified);
+      send_buffer.WriteString(username);
+      send_buffer.WriteString(message);
+      server_->Send(client, kComponentType_User,
+        kUserMessageType_SendMessage_Complete, send_buffer);
+
+      // Trigger events
+      OnSendMessageCompleted(kUserMessageResult_UserNotIdentified, username,
+        message, *chat_user);
+
+      return true;
+    }
+
+    // Send the message
+    TypedBuffer client_buffer = server_->CreateBuffer();
+    client_buffer.WriteUInt16(kUserMessageResult_MessageSent);
+    client_buffer.WriteString(chat_user->Username);
+    client_buffer.WriteString(chat_user->Hostname);
+    client_buffer.WriteString(message);
+    server_->Send(target_client, kComponentType_User,
+      kUserMessageType_SendMessage, client_buffer);
 
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kUserMessageResult_Ok);
-    send_buffer.WriteString(chat_user->Username);
-    send_buffer.WriteString(chat_user->Hostname);
+    send_buffer.WriteString(username);
+    send_buffer.WriteString(message);
     server_->Send(client, kComponentType_User,
-      kUserMessageType_Identify_Complete, send_buffer);
+      kUserMessageType_SendMessage_Complete, send_buffer);
 
     // Trigger events
-    OnIdentifyCompleted(kUserMessageResult_Ok, chat_user->Hostname, *chat_user);
-    OnIdentified(*chat_user);
+    OnSendMessageCompleted(kUserMessageResult_Ok, username, message,
+      *chat_user);
+    OnMessage(*chat_user, *target_user, message);
 
-    return true;*/
+    return true;
   }
 
   return false;
