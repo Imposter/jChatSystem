@@ -108,7 +108,8 @@ void ChannelComponent::OnClientDisconnected(RemoteChatClient &client) {
 
       // Remove the client from the operators list if they're an operator
       channel->OperatorsMutex.lock();
-      if (channel->Operators.find(&client) != channel->Operators.end()) {
+      if (channel->Operators.find(&client)
+        != channel->Operators.end()) {
         channel->Operators.erase(&client);
       }
       channel->OperatorsMutex.unlock();
@@ -814,7 +815,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
           kChannelMessageType_BanUser_Complete, send_buffer);
 
         // Trigger events
-        OnBanUserCompleted(kChannelMessageResult_NotInChannel,
+        OnBanUserCompleted(kChannelMessageResult_AlreadyBanned,
           chat_channel->Name, target, *chat_user);
 
         return true;
@@ -832,12 +833,14 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     clients_buffer.WriteString(ban_user->Username);
     clients_buffer.WriteString(ban_user->Hostname);
 
+    chat_channel->ClientsMutex.lock();
     for (auto &pair : chat_channel->Clients) {
       if (pair.first != &client && pair.second->Enabled) {
         server_->Send(pair.first, kComponentType_Channel,
-          kChannelMessageType_BanUser_Complete, clients_buffer);
+          kChannelMessageType_BanUser, clients_buffer);
       }
     }
+    chat_channel->ClientsMutex.unlock();
 
     // Tell the client that the user was banned
     TypedBuffer send_buffer = server_->CreateBuffer();
