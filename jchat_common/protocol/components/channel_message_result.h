@@ -50,7 +50,7 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_UserDeopped,
 
   // KickUser
-  kChannelMessageResult_CannotKickSelf
+  kChannelMessageResult_CannotKickSelf,
   kChannelMessageResult_UserKicked,
 
   // BanUser

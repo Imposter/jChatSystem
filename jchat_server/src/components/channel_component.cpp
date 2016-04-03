@@ -672,7 +672,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
         kChannelMessageType_KickUser_Complete, send_buffer);
 
       // Trigger events
-      OnKcikUserCompleted(kChannelMessageResult_NotIdentified, channel_name,
+      OnKickUserCompleted(kChannelMessageResult_NotIdentified, channel_name,
         target, *chat_user);
 
       return true;
@@ -806,20 +806,6 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
       }
     }
     chat_channel->ClientsMutex.unlock();
-    if (target_string.empty()) {
-      TypedBuffer send_buffer = server_->CreateBuffer();
-      send_buffer.WriteUInt16(kChannelMessageResult_InvalidUsername);
-      send_buffer.WriteString(channel_name);
-      send_buffer.WriteString(target);
-      server_->Send(client, kComponentType_Channel,
-        kChannelMessageType_KickUser_Complete, send_buffer);
-
-      // Trigger events
-      OnKickUserCompleted(kChannelMessageResult_InvalidUsername,
-        channel_name, target, *chat_user);
-
-      return true;
-    }
 
     // Notify other clients
     TypedBuffer clients_buffer = server_->CreateBuffer();
@@ -865,7 +851,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // Trigger events
     OnKickUserCompleted(kChannelMessageResult_Ok, chat_channel->Name,
       target, *chat_user);
-    OnKickUserCompleted(*chat_channel, *kick_user);
+    OnChannelUserKicked(*chat_channel, *kick_user);
 
     return true;
   } else if (message_type == kChannelMessageType_BanUser) {

@@ -74,17 +74,17 @@ int main(int argc, char **argv) {
   user_component->OnSendMessageCompleted.Add([](jchat::UserMessageResult result,
 	  std::string &username, std::string &message) {
     if (result == jchat::kUserMessageResult_InvalidUsername) {
-      std::cout << "User: Invalid username! (" << username  << ", "
-        << message << ")" << std::endl;
+      std::cout << "User: Invalid username! (" << username  << ", \""
+        << message << "\")" << std::endl;
     } else if (result == jchat::kUserMessageResult_NotIdentified) {
-      std::cout << "User: Not identified! (" << username  << ", "
-        << message << ")" << std::endl;
+      std::cout << "User: Not identified! (" << username  << ", \""
+        << message << "\")" << std::endl;
     } else if (result == jchat::kUserMessageResult_UserNotIdentified) {
-      std::cout << "User: User not identified! (" << username  << ", "
-        << message << ")" << std::endl;
+      std::cout << "User: User not identified! (" << username  << ", \""
+        << message << "\")" << std::endl;
     } else if (result == jchat::kUserMessageResult_CannotMessageSelf) {
-      std::cout << "User: Cannot message self! (" << username  << ", "
-        << message << ")" << std::endl;
+      std::cout << "User: Cannot message self! (" << username  << ", \""
+        << message << "\")" << std::endl;
     }
     return true;
   });
@@ -96,8 +96,8 @@ int main(int argc, char **argv) {
     }
 
     if (user->Username != source_username) {
-      std::cout << source_username << " => " << target << ": " << message
-        << std::endl;
+      std::cout << "User: " << source_username << " => " << target << ": "
+        << message << std::endl;
     }
 
     return true;
@@ -179,13 +179,13 @@ int main(int argc, char **argv) {
       std::cout << "Channel: Cannot op self! (" << channel_name
         << ", " << username << ")" << std::endl;
     }else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+      std::cout << "Channel: Not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
+      std::cout << "Channel: Not identified! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+      std::cout << "Channel: Invalid channel name! (" << channel_name
         << ", " << username << ")" << std::endl;
     }
     return true;
@@ -203,13 +203,13 @@ int main(int argc, char **argv) {
       std::cout << "Channel: Already not operator! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+      std::cout << "Channel: Not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
+      std::cout << "Channel: Not identified! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+      std::cout << "Channel: Invalid channel name! (" << channel_name
         << ", " << username << ")" << std::endl;
     }
     return true;
@@ -230,13 +230,13 @@ int main(int argc, char **argv) {
       std::cout << "Channel: Cannot kick self! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+      std::cout << "Channel: Not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
+      std::cout << "Channel: Not identified! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+      std::cout << "Channel: Invalid channel name! (" << channel_name
         << ", " << username << ")" << std::endl;
     }
     return true;
@@ -260,13 +260,13 @@ int main(int argc, char **argv) {
       std::cout << "Channel: Cannot ban self! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+      std::cout << "Channel: Not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
+      std::cout << "Channel: Not identified! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+      std::cout << "Channel: Invalid channel name! (" << channel_name
         << ", " << username << ")" << std::endl;
     }
     return true;
@@ -290,13 +290,13 @@ int main(int argc, char **argv) {
       std::cout << "Channel: Cannot unban self! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
-      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+      std::cout << "Channel: Not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
-      std::cout << "Channel: Not identified! (" << channel_name << ")"
+      std::cout << "Channel: Not identified! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
-      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+      std::cout << "Channel: Invalid channel name! (" << channel_name
         << ", " << username << ")" << std::endl;
     }
     return true;
