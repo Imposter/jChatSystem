@@ -16,7 +16,7 @@
 #include "ip_endpoint.hpp"
 #include <chrono>
 #include <thread>
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OSX) || defined(OS_UNIX)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -162,7 +162,7 @@ public:
     is_connected_(true), is_internal_(true) {
     read_buffer_.resize(JCHAT_TCP_BUFFER_SIZE);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OSX) || defined(OS_UNIX)
   	uint32_t flags = fcntl(client_socket, F_GETFL, 0);
   	if (flags != SOCKET_ERROR) {
   	  flags |= O_NONBLOCK;
@@ -218,7 +218,7 @@ public:
     }
     client_endpoint_.SetSocketEndpoint(client_endpoint);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OSX) || defined(OS_UNIX)
   	uint32_t flags = fcntl(client_socket_, F_GETFL, 0);
   	if (flags != SOCKET_ERROR) {
   	  flags |= O_NONBLOCK;

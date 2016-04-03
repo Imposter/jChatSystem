@@ -68,7 +68,7 @@ class TcpServer {
       // Check if a new connection is awaiting
       if (FD_ISSET(listen_socket_, &socket_set)) {
         sockaddr_in client_endpoint;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OSX) || defined(OS_UNIX)
         uint32_t client_endpoint_size = sizeof(client_endpoint);
 #elif defined(OS_WIN)
         int32_t client_endpoint_size = sizeof(client_endpoint);
@@ -196,7 +196,7 @@ public:
 		  return false;
 	  }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_OSX) || defined(OS_UNIX)
 	  uint32_t flags = fcntl(listen_socket_, F_GETFL, 0);
 	  if (flags != SOCKET_ERROR) {
 		  flags |= O_NONBLOCK;
