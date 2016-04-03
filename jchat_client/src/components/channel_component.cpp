@@ -587,6 +587,8 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       }
     }
     channels_mutex_.unlock();
+
+    return true;
   } else if (message_type == kChannelMessageType_UnbanUser) {
     // TODO: Implement
 
