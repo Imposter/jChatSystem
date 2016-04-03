@@ -455,13 +455,13 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     chat_channel->OperatorsMutex.unlock();
 
     // If there was nobody in the channel delete it
-    chat_channel->Clients.lock();
+    chat_channel->ClientsMutex.lock();
     if (chat_channel->Clients.empty()) {
       chat_channel->Clients.unlock();
       chat_channel->Enabled = false;
       chat_channel.reset();
     } else {
-      chat_channel->Clients.unlock();
+      chat_channel->ClientsMutex.unlock();
     }
 
     return true;
