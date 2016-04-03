@@ -638,8 +638,236 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     // TODO: Implement
     return false;
   } else if (message_type == kChannelMessageType_KickUser) {
-    // TODO: Implement
-    return false;
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+
+    std::string target;
+    if (!buffer.ReadString(target)) {
+      return false;
+    }
+
+    // Get user component
+    std::shared_ptr<UserComponent> user_component;
+    if (!server_->GetComponent(kComponentType_User, user_component)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Get the chat client
+    std::shared_ptr<ChatUser> chat_user;
+    if (!user_component->GetChatUser(client, chat_user)) {
+      // Internal error, disconnect client
+      return false;
+    }
+
+    // Check if the user is logged in
+    if (!chat_user->Identified) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotIdentified);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKcikUserCompleted(kChannelMessageResult_NotIdentified, channel_name,
+        target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the channel name is valid
+    if (channel_name.empty() || channel_name[0] != '#') {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_InvalidChannelName,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the target is valid
+    if (target.empty() || String::Contains(target, "#")) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidUsername);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_InvalidUsername,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the channel exists
+    std::shared_ptr<ChatChannel> chat_channel;
+    channels_mutex_.lock();
+    for (auto &channel : channels_) {
+      if (channel->Enabled && channel->Name == channel_name) {
+        chat_channel = channel;
+        break;
+      }
+    }
+    channels_mutex_.unlock();
+
+    if (!chat_channel) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidChannelName);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_InvalidChannelName,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the user is in the channel
+    chat_channel->ClientsMutex.lock();
+    if (chat_channel->Clients.find(&client) == chat_channel->Clients.end()) {
+      chat_channel->ClientsMutex.unlock();
+
+      // Notify the client that they are not in the channel
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotInChannel);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_NotInChannel, chat_channel->Name,
+        target, *chat_user);
+
+      return true;
+    }
+    chat_channel->ClientsMutex.unlock();
+
+    // Check if the user has permissions
+    chat_channel->OperatorsMutex.lock();
+    if (chat_channel->Operators.find(&client)
+      == chat_channel->Operators.end()) {
+      chat_channel->OperatorsMutex.unlock();
+
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_NotPermitted);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_NotPermitted,
+        chat_channel->Name, target, *chat_user);
+
+      return true;
+    }
+    chat_channel->OperatorsMutex.unlock();
+
+    // Check if the user is trying to kick themself
+    if (target == chat_user->Username) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_CannotKickSelf);
+      send_buffer.WriteString(chat_channel->Name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_CannotKickSelf,
+        chat_channel->Name, target, *chat_user);
+
+      return true;
+    }
+
+    // Check if the target is in the channel
+    RemoteChatClient *kick_user_key = 0;
+    std::shared_ptr<ChatUser> kick_user;
+    chat_channel->ClientsMutex.lock();
+    for (auto pair : chat_channel->Clients) {
+      if (pair.second->Username == target) {
+        kick_user_key = pair.first;
+        kick_user = pair.second;
+        break;
+      }
+    }
+    chat_channel->ClientsMutex.unlock();
+    if (target_string.empty()) {
+      TypedBuffer send_buffer = server_->CreateBuffer();
+      send_buffer.WriteUInt16(kChannelMessageResult_InvalidUsername);
+      send_buffer.WriteString(channel_name);
+      send_buffer.WriteString(target);
+      server_->Send(client, kComponentType_Channel,
+        kChannelMessageType_KickUser_Complete, send_buffer);
+
+      // Trigger events
+      OnKickUserCompleted(kChannelMessageResult_InvalidUsername,
+        channel_name, target, *chat_user);
+
+      return true;
+    }
+
+    // Notify other clients
+    TypedBuffer clients_buffer = server_->CreateBuffer();
+    clients_buffer.WriteUInt16(kChannelMessageResult_UserKicked);
+    clients_buffer.WriteString(chat_channel->Name);
+    clients_buffer.WriteString(kick_user->Username);
+    clients_buffer.WriteString(kick_user->Hostname);
+
+    chat_channel->ClientsMutex.lock();
+    for (auto &pair : chat_channel->Clients) {
+      if (pair.first != &client && pair.second->Enabled) {
+        server_->Send(pair.first, kComponentType_Channel,
+          kChannelMessageType_KickUser, clients_buffer);
+      }
+    }
+    chat_channel->ClientsMutex.unlock();
+
+    // Tell the client that the user was banned
+    TypedBuffer send_buffer = server_->CreateBuffer();
+    send_buffer.WriteUInt16(kChannelMessageResult_Ok);
+    send_buffer.WriteString(chat_channel->Name);
+    send_buffer.WriteString(target);
+    send_buffer.WriteString(kick_user->Username);
+    send_buffer.WriteString(kick_user->Hostname);
+    server_->Send(client, kComponentType_Channel,
+      kChannelMessageType_KickUser_Complete, send_buffer);
+
+    // Remove the client from channel client lists
+    chat_channel->OperatorsMutex.lock();
+    if (chat_channel->Operators.find(kick_user_key)
+      != chat_channel->Operators.end()) {
+      chat_channel->Operators.erase(kick_user_key);
+    }
+    chat_channel->OperatorsMutex.unlock();
+
+    chat_channel->ClientsMutex.lock();
+    if (chat_channel->Clients.find(kick_user_key)
+      != chat_channel->Clients.end()) {
+      chat_channel->Clients.erase(kick_user_key);
+    }
+    chat_channel->ClientsMutex.unlock();
+
+    // Trigger events
+    OnKickUserCompleted(kChannelMessageResult_Ok, chat_channel->Name,
+      target, *chat_user);
+    OnKickUserCompleted(*chat_channel, *kick_user);
+
+    return true;
   } else if (message_type == kChannelMessageType_BanUser) {
     std::string channel_name;
     if (!buffer.ReadString(channel_name)) {

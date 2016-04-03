@@ -59,7 +59,6 @@ public:
   Event<ChannelMessageResult, std::string &,
     std::string &> OnUnbanUserCompleted;
 
-
   Event<ChatChannel &, ChatUser &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;
   Event<ChatChannel &, ChatUser &> OnChannelLeft;

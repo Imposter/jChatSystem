@@ -42,6 +42,7 @@ enum ChannelMessageResult : uint16_t {
 
   // OpUser
   kChannelMessageResult_AlreadyOperator,
+  kChannelMessageResult_CannotOpSelf,
   kChannelMessageResult_UserOpped,
 
   // DeopUser
@@ -49,6 +50,7 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_UserDeopped,
 
   // KickUser
+  kChannelMessageResult_CannotKickSelf
   kChannelMessageResult_UserKicked,
 
   // BanUser
@@ -58,6 +60,7 @@ enum ChannelMessageResult : uint16_t {
 
   // UnbanUser
   kChannelMessageResult_NotBanned,
+  kChannelMessageResult_CannotUnbanSelf,
   kChannelMessageResult_UserUnbanned,
 
   kChannelMessageResult_Max

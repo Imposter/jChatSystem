@@ -175,7 +175,10 @@ int main(int argc, char **argv) {
     } else if (result == jchat::kChannelMessageResult_AlreadyOperator) {
       std::cout << "Channel: Already operator! (" << channel_name
         << ", " << username << ")" << std::endl;
-    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+    } else if (result == jchat::kChannelMessageResult_CannotOpSelf) {
+      std::cout << "Channel: Cannot op self! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    }else if (result == jchat::kChannelMessageResult_NotInChannel) {
       std::cout << "Channel: Not in channel! (" << channel_name << ")"
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotIdentified) {
@@ -223,6 +226,9 @@ int main(int argc, char **argv) {
     } else if (result == jchat::kChannelMessageResult_UserNotInChannel) {
       std::cout << "Channel: User not in channel! (" << channel_name
         << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_CannotKickSelf) {
+      std::cout << "Channel: Cannot kick self! (" << channel_name
+        << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
       std::cout << "Channel: Not in channel! (" << channel_name << ")"
         << ", " << username << ")" << std::endl;
@@ -251,7 +257,7 @@ int main(int argc, char **argv) {
       std::cout << "Channel: User already banned! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_CannotBanSelf) {
-      std::cout << "Channel: You cannot ban yourself! (" << channel_name
+      std::cout << "Channel: Cannot ban self! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
       std::cout << "Channel: Not in channel! (" << channel_name << ")"
@@ -280,8 +286,8 @@ int main(int argc, char **argv) {
     } else if (result == jchat::kChannelMessageResult_AlreadyBanned) {
       std::cout << "Channel: User already banned! (" << channel_name
         << ", " << username << ")" << std::endl;
-    } else if (result == jchat::kChannelMessageResult_CannotBanSelf) {
-      std::cout << "Channel: You cannot ban yourself! (" << channel_name
+    } else if (result == jchat::kChannelMessageResult_CannotUnbanSelf) {
+      std::cout << "Channel: Cannot unban self! (" << channel_name
         << ", " << username << ")" << std::endl;
     } else if (result == jchat::kChannelMessageResult_NotInChannel) {
       std::cout << "Channel: Not in channel! (" << channel_name << ")"
