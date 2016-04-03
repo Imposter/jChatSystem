@@ -9,7 +9,7 @@
 #include "components/system_component.h"
 #include "components/user_component.h"
 #include "chat_server.h"
-#include "protocol/version.h"
+#include "protocol/protocol.h"
 #include "protocol/components/system_message_type.h"
 
 namespace jchat {
@@ -82,7 +82,7 @@ bool SystemComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kSystemMessageResult_Ok);
     server_->Send(client, kComponentType_System,
-      kSystemMessageType_Complete_Hello, send_buffer);
+      kSystemMessageType_Hello_Complete, send_buffer);
 
 	return true;
   }

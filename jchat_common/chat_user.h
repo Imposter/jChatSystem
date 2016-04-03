@@ -9,10 +9,6 @@
 #ifndef jchat_common_chat_user_h_
 #define jchat_common_chat_user_h_
 
-#ifndef JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH
-#define JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH 24
-#endif // JCHAT_COMMON_CHAT_USER_USERNAME_MAX_LENGTH
-
 namespace jchat {
 struct ChatUser {
   bool Enabled;

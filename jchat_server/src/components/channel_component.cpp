@@ -9,7 +9,7 @@
 #include "components/channel_component.h"
 #include "components/user_component.h"
 #include "chat_server.h"
-#include "protocol/version.h"
+#include "protocol/protocol.h"
 #include "protocol/components/channel_message_type.h"
 #include "string.hpp"
 
@@ -186,6 +186,21 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     channels_mutex_.unlock();
 
     if (!chat_channel) {
+      // Check if the channel name is too long
+      if (channel_name.size() > JCHAT_CHAT_CHANNEL_NAME_LENGTH) {
+        TypedBuffer send_buffer = server_->CreateBuffer();
+        send_buffer.WriteUInt16(kChannelMessageResult_ChannelNameTooLong);
+        send_buffer.WriteString(channel_name);
+        server_->Send(client, kComponentType_User,
+          kChannelMessageType_JoinChannel_Complete, send_buffer);
+
+        // Trigger events
+        OnJoinCompleted(kChannelMessageResult_ChannelNameTooLong, channel_name,
+          *chat_user);
+
+        return true;
+      }
+
       // Create the channel and add the user to it
       chat_channel = std::make_shared<ChatChannel>();
       chat_channel->Enabled = true;

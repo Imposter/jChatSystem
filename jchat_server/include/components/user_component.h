@@ -49,8 +49,11 @@ public:
 
   // API events
   Event<UserMessageResult, std::string &, ChatUser &> OnIdentifyCompleted;
+  Event<UserMessageResult, std::string &, std::string &,
+    ChatUser &> OnSendMessageCompleted;
 
   Event<ChatUser &> OnIdentified;
+  Event<ChatUser &, ChatUser &, std::string> OnMessage;
 };
 }
 

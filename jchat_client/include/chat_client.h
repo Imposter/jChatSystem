@@ -13,7 +13,7 @@
 #include "tcp_client.hpp"
 #include "chat_component.h"
 #include "chat_channel.h"
-#include "protocol/version.h"
+#include "protocol/protocol.h"
 #include "protocol/component_type.h"
 
 namespace jchat {

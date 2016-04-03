@@ -9,7 +9,6 @@
 #include "components/channel_component.h"
 #include "components/user_component.h"
 #include "chat_client.h"
-#include "protocol/version.h"
 #include "protocol/components/channel_message_type.h"
 
 namespace jchat {

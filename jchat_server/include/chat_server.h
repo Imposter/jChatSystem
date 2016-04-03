@@ -13,7 +13,7 @@
 #include "tcp_server.hpp"
 #include "remote_chat_client.h"
 #include "chat_component.h"
-#include "protocol/version.h"
+#include "protocol/protocol.h"
 #include "protocol/component_type.h"
 #include <map>
 
