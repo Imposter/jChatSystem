@@ -843,6 +843,7 @@ bool ChannelComponent::Handle(RemoteChatClient &client, uint16_t message_type,
     TypedBuffer send_buffer = server_->CreateBuffer();
     send_buffer.WriteUInt16(kChannelMessageResult_Ok);
     send_buffer.WriteString(chat_channel->Name);
+    send_buffer.WriteString(target);
     send_buffer.WriteString(ban_user->Username);
     send_buffer.WriteString(ban_user->Hostname);
     server_->Send(client, kComponentType_Channel,

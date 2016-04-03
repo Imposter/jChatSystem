@@ -280,7 +280,71 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     return true;
   } else if (message_type == kChannelMessageType_BanUser_Complete) {
-    // TODO: Implement
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+    std::string target;
+    if (!buffer.ReadString(target)) {
+      return false;
+    }
+    OnBanUserCompleted(static_cast<ChannelMessageResult>(message_result),
+      channel_name, target);
+
+    if (message_result != kChannelMessageResult_Ok) {
+      return true;
+    }
+
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    channels_mutex_.lock();
+    for (auto it = channels_.begin(); it != channels_.end(); ++it) {
+      std::shared_ptr<ChatChannel> &chat_channel = *it;
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        chat_channel->ClientsMutex.lock();
+        for (auto it = chat_channel->Clients.begin();
+          it != chat_channel->Clients.end(); ++it) {
+          std::shared_ptr<ChatUser> &chat_user = *it;
+          if (chat_user->Username == username
+            && chat_user->Hostname == hostname) {
+            OnChannelUserBanned(*chat_channel, *chat_user);
+            chat_channel->Clients.erase(it);
+            break;
+          }
+        }
+        chat_channel->ClientsMutex.unlock();
+
+        chat_channel->OperatorsMutex.lock();
+        for (auto it = chat_channel->Operators.begin();
+          it != chat_channel->Operators.end(); ++it) {
+          std::shared_ptr<ChatUser> &chat_user = *it;
+          if (chat_user->Username == username
+            && chat_user->Hostname == hostname) {
+            chat_channel->Operators.erase(it);
+            break;
+          }
+        }
+        chat_channel->OperatorsMutex.unlock();
+
+        chat_channel->BannedUsersMutex.lock();
+        chat_channel->BannedUsers.push_back(username + "@" + hostname);
+        chat_channel->BannedUsersMutex.unlock();
+
+        break;
+      }
+    }
+    channels_mutex_.unlock();
 
     return true;
   } else if (message_type == kChannelMessageType_UnbanUser_Complete) {
@@ -306,6 +370,10 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     std::string hostname;
     if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    if (message_result != kChannelMessageResult_UserJoined) {
       return false;
     }
 
@@ -352,6 +420,10 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     std::string hostname;
     if (!buffer.ReadString(hostname)) {
+      return false;
+    }
+
+    if (message_result != kChannelMessageResult_UserLeft) {
       return false;
     }
 
@@ -418,6 +490,10 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
       return false;
     }
 
+    if (message_result != kChannelMessageResult_MessageSent) {
+      return false;
+    }
+
     // Find the channel
     channels_mutex_.lock();
     for (auto &chat_channel : channels_) {
@@ -453,9 +529,64 @@ bool ChannelComponent::Handle(uint16_t message_type, TypedBuffer &buffer) {
 
     return true;
   } else if (message_type == kChannelMessageType_BanUser) {
-    // TODO: Implement
+    uint16_t message_result = 0;
+    if (!buffer.ReadUInt16(message_result)) {
+      return false;
+    }
+    std::string channel_name;
+    if (!buffer.ReadString(channel_name)) {
+      return false;
+    }
+    std::string username;
+    if (!buffer.ReadString(username)) {
+      return false;
+    }
+    std::string hostname;
+    if (!buffer.ReadString(hostname)) {
+      return false;
+    }
 
-    return true;
+    if (message_result != kChannelMessageResult_UserBanned) {
+      return false;
+    }
+
+    channels_mutex_.lock();
+    for (auto it = channels_.begin(); it != channels_.end(); ++it) {
+      std::shared_ptr<ChatChannel> &chat_channel = *it;
+      if (chat_channel->Enabled && chat_channel->Name == channel_name) {
+        chat_channel->ClientsMutex.lock();
+        for (auto it = chat_channel->Clients.begin();
+          it != chat_channel->Clients.end(); ++it) {
+          std::shared_ptr<ChatUser> &chat_user = *it;
+          if (chat_user->Username == username
+            && chat_user->Hostname == hostname) {
+            OnChannelUserBanned(*chat_channel, *chat_user);
+            chat_channel->Clients.erase(it);
+            break;
+          }
+        }
+        chat_channel->ClientsMutex.unlock();
+
+        chat_channel->OperatorsMutex.lock();
+        for (auto it = chat_channel->Operators.begin();
+          it != chat_channel->Operators.end(); ++it) {
+          std::shared_ptr<ChatUser> &chat_user = *it;
+          if (chat_user->Username == username
+            && chat_user->Hostname == hostname) {
+            chat_channel->Operators.erase(it);
+            break;
+          }
+        }
+        chat_channel->OperatorsMutex.unlock();
+
+        chat_channel->BannedUsersMutex.lock();
+        chat_channel->BannedUsers.push_back(username + "@" + hostname);
+        chat_channel->BannedUsersMutex.unlock();
+
+        break;
+      }
+    }
+    channels_mutex_.unlock();
   } else if (message_type == kChannelMessageType_UnbanUser) {
     // TODO: Implement
 

@@ -57,19 +57,18 @@ public:
   Event<ChannelMessageResult, std::string &, std::string &> OnKickUserCompleted;
   Event<ChannelMessageResult, std::string &, std::string &> OnBanUserCompleted;
   Event<ChannelMessageResult, std::string &,
-  std::string &> OnUnbanUserCompleted;
+    std::string &> OnUnbanUserCompleted;
 
 
   Event<ChatChannel &, ChatUser &> OnChannelCreated;
   Event<ChatChannel &, ChatUser &> OnChannelJoined;
   Event<ChatChannel &, ChatUser &> OnChannelLeft;
-
   Event<ChatChannel &, ChatUser &, std::string &> OnChannelMessage;
   Event<ChatChannel &, ChatUser &> OnChannelUserOpped;
   Event<ChatChannel &, ChatUser &> OnChannelUserDeopped;
   Event<ChatChannel &, ChatUser &> OnChannelUserKicked;
   Event<ChatChannel &, ChatUser &> OnChannelUserBanned;
-  Event<ChatChannel &, ChatUser &> OnChannelUserUnbanned;
+  Event<ChatChannel &, std::string &, std::string &> OnChannelUserUnbanned;
 };
 }
 

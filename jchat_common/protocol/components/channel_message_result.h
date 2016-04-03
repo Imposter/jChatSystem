@@ -23,6 +23,7 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_InvalidUsername,
   kChannelMessageResult_NotInChannel,
   kChannelMessageResult_NotPermitted,
+  kChannelMessageResult_UserNotInChannel,
 
   // JoinChannel
   kChannelMessageResult_ChannelCreated,
@@ -47,7 +48,6 @@ enum ChannelMessageResult : uint16_t {
   kChannelMessageResult_UserDeopped,
 
   // KickUser
-  kChannelMessageResult_UserNotInChannel,
   kChannelMessageResult_UserKicked,
 
   // BanUser

@@ -132,6 +132,138 @@ int main(int argc, char **argv) {
     }
     return true;
   });
+  channel_component->OnOpUserCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &username) {
+    if (result == jchat::kChannelMessageResult_Ok) {
+      std::cout << "Channel: Successfully opped user! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotPermitted) {
+      std::cout << "Channel: Not permitted! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_AlreadyOperator) {
+      std::cout << "Channel: Already operator! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    }
+    return true;
+  });
+  channel_component->OnDeopUserCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &username) {
+    if (result == jchat::kChannelMessageResult_Ok) {
+      std::cout << "Channel: Successfully deopped user! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotPermitted) {
+      std::cout << "Channel: Not permitted! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_AlreadyNotOperator) {
+      std::cout << "Channel: Already not operator! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    }
+    return true;
+  });
+  channel_component->OnKickUserCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &username) {
+    if (result == jchat::kChannelMessageResult_Ok) {
+      std::cout << "Channel: Successfully kicked user! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotPermitted) {
+      std::cout << "Channel: Not permitted! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_UserNotInChannel) {
+      std::cout << "Channel: User not in channel! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    }
+    return true;
+  });
+  channel_component->OnBanUserCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &username) {
+    if (result == jchat::kChannelMessageResult_Ok) {
+      std::cout << "Channel: Successfully banned user! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotPermitted) {
+      std::cout << "Channel: Not permitted! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_UserNotInChannel) {
+      std::cout << "Channel: User not in channel! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_AlreadyBanned) {
+      std::cout << "Channel: User already banned! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_CannotBanSelf) {
+      std::cout << "Channel: You cannot ban yourself! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    }
+    return true;
+  });
+  channel_component->OnUnbanUserCompleted.Add([](
+    jchat::ChannelMessageResult result, std::string &channel_name,
+    std::string &username) {
+    if (result == jchat::kChannelMessageResult_Ok) {
+      std::cout << "Channel: Successfully banned user! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotPermitted) {
+      std::cout << "Channel: Not permitted! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotBanned) {
+      std::cout << "Channel: User not bannned! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_AlreadyBanned) {
+      std::cout << "Channel: User already banned! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_CannotBanSelf) {
+      std::cout << "Channel: You cannot ban yourself! (" << channel_name
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotInChannel) {
+      std::cout << "Channel: Not in channel! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_NotIdentified) {
+      std::cout << "Channel: Not identified! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    } else if (result == jchat::kChannelMessageResult_InvalidChannelName) {
+      std::cout << "Channel: Invalid channel name! (" << channel_name << ")"
+        << ", " << username << ")" << std::endl;
+    }
+    return true;
+  });
   channel_component->OnChannelJoined.Add([=](jchat::ChatChannel &channel,
     jchat::ChatUser &user) {
     std::shared_ptr<jchat::ChatUser> local_user;
@@ -174,8 +306,88 @@ int main(int argc, char **argv) {
 
     return true;
   });
+  channel_component->OnChannelUserOpped.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
 
-  // TODO: Add event handlers for op/deop/kick/ban/unban
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " was opped"
+        << " (" << channel.Name << ")" << std::endl;
+    } else {
+      std::cout << "Channel: You were opped"
+        << " (" << channel.Name << ")" << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelUserDeopped.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " was deopped"
+        << " (" << channel.Name << ")" << std::endl;
+    } else {
+      std::cout << "Channel: You were deopped"
+        << " (" << channel.Name << ")" << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelUserKicked.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " was kicked"
+        << " (" << channel.Name << ")" << std::endl;
+    } else {
+      std::cout << "Channel: You were kicked"
+        << " (" << channel.Name << ")" << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelUserBanned.Add([=](jchat::ChatChannel &channel,
+    jchat::ChatUser &user) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (&user != local_user.get()) {
+      std::cout << "Channel: " << user.Username << " was banned"
+        << " (" << channel.Name << ")" << std::endl;
+    } else {
+      std::cout << "Channel: You were banned"
+        << " (" << channel.Name << ")" << std::endl;
+    }
+
+    return true;
+  });
+  channel_component->OnChannelUserUnbanned.Add([=](jchat::ChatChannel &channel,
+    std::string &username, std::string &hostname) {
+    std::shared_ptr<jchat::ChatUser> local_user;
+    if (!user_component->GetChatUser(local_user)) {
+      return false;
+    }
+
+    if (local_user->Username != username && local_user->Hostname != hostname) {
+      std::cout << "Channel: " << username << " was unbanned"
+        << " (" << channel.Name << ")" << std::endl;
+    }
+
+    return true;
+  });
 
   // Add the components to the client instance
   chat_client.AddComponent(system_component);
