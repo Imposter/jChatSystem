@@ -1,4 +1,11 @@
--- premake5.lua
+-- [[
+-- This file is part of the jChatSystem project.
+--
+-- This program is licensed under the GNU General
+-- Public License. To view the full license, check
+-- LICENSE in the project root.
+--]]
+
 workspace "jchat"
 	configurations { "Debug", "Release" }
 	platforms { "Win32", "Win64", "Unix32", "Unix64" }
