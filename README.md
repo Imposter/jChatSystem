@@ -13,7 +13,7 @@ The following is a list of planned and current features:
   * Op user *
   * Deop user *
   * Unban user *
-  `* Planned`
+  * `* Planned`
 * Channel messaging
 
 ## Installation/Usage
@@ -30,7 +30,7 @@ The following is a list of planned and current features:
     * release_win64
     * release_unix32 *
     * release_unix64
-    `* GNU compilers may not work`
+    * `* GNU compilers may not work`
   * `make config=debug_unix32 all`
 4. You can launch the program in the corresponding platform and configuration in the `build/` directory
 
